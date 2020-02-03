@@ -1,13 +1,8 @@
-import glob
 import os
 import sys
 
-try:
-    sys.path.append(glob.glob('./carla-*%d.%d-%s.egg' % (
-        sys.version_info.major,
-        sys.version_info.minor,
-        'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
-except IndexError:
-    pass
+sys.path.append('{}/carla-0.9.6-py3.6-linux-x86_64.egg'.format(
+    os.path.dirname(os.path.realpath(__file__)))
+)
 
 from carla import *
