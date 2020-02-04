@@ -126,6 +126,8 @@ if __name__ == '__main__':
 
     clock = pygame.time.Clock()
 
+    print('connected')
+
     stopped = False
     while not stopped:
         try:
