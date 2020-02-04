@@ -4,6 +4,10 @@ from typing import NamedTuple
 import pygame
 
 
+#
+# generic controller handling
+#
+
 class RawControllerState(NamedTuple):
     axis_data: Dict[int, Optional[float]] = {}
     button_data: Dict[int, bool] = {}
@@ -11,10 +15,11 @@ class RawControllerState(NamedTuple):
 
 
 class ControllerEventHandler(object):
-    def __init__(self, callback: Callable):
+    def __init__(self, controller_index: int, callback: Callable):
+        self._controller_index: int = controller_index
         self._callback: Callable = callback
 
-        self._controller: pygame.joystick.JoystickType = pygame.joystick.Joystick(0)
+        self._controller: pygame.joystick.JoystickType = pygame.joystick.Joystick(self._controller_index)
         self._controller.init()
 
         self._axis_data: Dict[int, Optional[float]] = {
@@ -56,6 +61,11 @@ class ControllerEventHandler(object):
         )
 
 
+#
+# generic handling for our driving use case
+#
+
+
 class ControllerState(NamedTuple):
     throttle: float
     brake: float
@@ -65,12 +75,27 @@ class ControllerState(NamedTuple):
 
 
 class Controller(object):
-    def __init__(self, callback: Callable):
+    def __init__(self, controller_index: int, callback: Callable):
+        self._controller_index: int = controller_index
         self._callback: Callable = callback
 
-        self._handler: ControllerEventHandler = ControllerEventHandler(self._handle_callback)
+        self._handler: ControllerEventHandler = ControllerEventHandler(
+            controller_index=self._controller_index,
+            callback=self._callback_wrapper
+        )
 
         self._reverse: bool = False
+
+        self._last_controller_state: Optional[ControllerState] = None
+
+    def _callback_wrapper(self, raw_controller_state: RawControllerState):
+        controller_state = self._handle_callback(raw_controller_state)
+        if controller_state == self._last_controller_state:
+            return
+
+        self._callback(controller_state)
+        
+        self._last_controller_state = controller_state
 
     def _handle_callback(self, controller_state: RawControllerState):
         raise NotImplementedError('this method should be overridden')
@@ -79,7 +104,11 @@ class Controller(object):
         self._handler.handle_event(event)
 
 
-class PS4Controller(Controller):
+#
+# handling for a gamepad
+#
+
+class GamepadController(Controller):
     def _handle_callback(self, controller_state: RawControllerState):
         if controller_state.axis_data[5] is not None:
             throttle = round((controller_state.axis_data[5] + 1.0) / 2.0, 2)
@@ -115,19 +144,17 @@ class PS4Controller(Controller):
                 type(self._callback)
             ))
 
-        self._callback(
-            ControllerState(
-                throttle=throttle,
-                brake=brake,
-                steer=steer,
-                hand_brake=hand_brake,
-                reverse=self._reverse
-            )
+        return ControllerState(
+            throttle=throttle,
+            brake=brake,
+            steer=steer,
+            hand_brake=hand_brake,
+            reverse=self._reverse
         )
 
 
 if __name__ == '__main__':
-    def callback(controller_state: ControllerState):
+    def _callback(controller_state: ControllerState):
         print(controller_state)
 
         return
@@ -136,19 +163,22 @@ if __name__ == '__main__':
     pygame.init()
     pygame.joystick.init()
 
-    controller = PS4Controller(callback)
+    controller = GamepadController(
+        controller_index=0,
+        callback=_callback
+    )
 
     clock = pygame.time.Clock()
 
     stopped = False
     while not stopped:
         try:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
                     stopped = True
                     break
 
-                controller.handle_event(event)
+                controller.handle_event(e)
 
             clock.tick(24)
         except KeyboardInterrupt:
