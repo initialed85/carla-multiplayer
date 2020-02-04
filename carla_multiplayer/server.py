@@ -29,6 +29,10 @@ class Player(object):
 
         self._frame: Optional[bytes] = None
 
+    @property
+    def uuid(self):
+        return self._uuid
+
     def _callback(self, carla_image: carla.Image, pil_image: Image.Image, data: bytes):
         _ = carla_image
         _ = pil_image
@@ -96,6 +100,9 @@ class Server(object):
 
         return player
 
+    def get_players(self) -> List[Player]:
+        return list(self._players_by_uuid.values())
+
     def unregister_player(self, uuid: UUID):
         player = self._players_by_uuid.pop(uuid)
         if player is None:
@@ -106,8 +113,8 @@ class Server(object):
     def stop(self):
         self._stopped = True
 
-        for uuid in self._players_by_uuid.keys():
-            self.unregister_player(uuid)
+        for player in self.get_players():
+            self.unregister_player(player.uuid)
 
 
 if __name__ == '__main__':
