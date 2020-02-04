@@ -18,7 +18,7 @@ except ImportError as e:
             repr(str(e))
         ))
 
-_DAEMON = Pyro4.Daemon(port=13337)
+_DAEMON = Pyro4.Daemon(host='0.0.0.0', port=13337)
 
 
 class Player(object):
@@ -163,5 +163,7 @@ if __name__ == '__main__':
     except Exception as e:
         print('caught {}; traceback follows'.format(repr(e)))
         traceback.print_exc()
+    except KeyboardInterrupt:
+        print('shutting down')
 
     _server.stop()
