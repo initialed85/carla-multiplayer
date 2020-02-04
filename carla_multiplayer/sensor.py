@@ -73,6 +73,8 @@ class Sensor(object):
             self._handle_image_from_deque(image)
 
     def _handle_image_from_sensor(self, image: carla.Image):
+        print(image)
+
         self._images.append(image)
 
     def start(self):
