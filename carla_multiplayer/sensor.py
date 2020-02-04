@@ -1,7 +1,8 @@
 from typing import Optional
 
-import carla
 import numpy
+
+from . import carla
 
 _FPS = 24
 _SENSOR_BLUEPRINT_NAME = 'sensor.other.rgb'
