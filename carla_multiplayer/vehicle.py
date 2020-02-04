@@ -6,7 +6,7 @@ from typing import Optional
 try:
     from . import wrapped_carla as carla
 except ImportError as e:
-    raise RuntimeError('got {} stating {}; ensure you run this as a module, not a script (e.g. python -m carla_multiplayer.sensor)'.format(
+    raise RuntimeError('got {} stating {}; ensure you run this as a module, not a script (e.g. python -m carla_multiplayer.vehicle)'.format(
         type(e),
         repr(str(e))
     ))
@@ -36,7 +36,7 @@ class Vehicle(object):
         self._last_control_timestamp: Optional[datetime.datetime] = None
         self._control_expirer: Optional[Thread] = None
 
-        self._stopped = False
+        self._stopped: bool = False
 
     def _expire_control(self):
         while not self._stopped:

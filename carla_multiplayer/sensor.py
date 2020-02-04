@@ -67,7 +67,7 @@ class Sensor(object):
         self._images = deque(maxlen=int(round(self._fps * 10, 0)))
         self._image_handler: Optional[Thread] = None
 
-        self._stopped = False
+        self._stopped: bool = False
 
     def _handle_image_from_deque(self, image: carla.Image):
         rgb_array = to_rgb_array(image)
