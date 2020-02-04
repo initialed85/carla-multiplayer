@@ -78,7 +78,7 @@ class Player(object):
     def get_frame(self) -> Optional[bytes]:
         return self._frame
 
-    def get_location(self):
+    def get_transform(self):
         carla_transform = self._vehicle.get_transform()
 
         return Transform(

@@ -41,13 +41,13 @@ class Vehicle(object):
     def _expire_control(self):
         while not self._stopped:
             if self._actor is None:
-                time.sleep(0.01)
+                time.sleep(0.1)
 
                 continue
 
             if self._last_control_timestamp is not None:
                 if datetime.datetime.now() - self._last_control_timestamp < datetime.timedelta(seconds=1):
-                    time.sleep(0.01)
+                    time.sleep(0.1)
 
                     continue
 
@@ -91,7 +91,7 @@ class Vehicle(object):
         self._world.wait_for_tick()
 
         self._control_expirer = Thread(target=self._expire_control)
-        self._control_expirer.start()
+        # self._control_expirer.start()
 
     def stop(self):
         self._stopped = True
