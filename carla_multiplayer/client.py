@@ -15,6 +15,7 @@ _CONTROLLER_INDEX = 0
 _WIDTH = 1280
 _HEIGHT = 720
 _FPS = 24
+_CONTROL_RATE = 10
 
 Pyro4.config.SERIALIZER = 'pickle'
 
@@ -30,49 +31,70 @@ class Client(object):
         self._uuid: Optional[UUID] = None
         self._player: Optional[Player] = None
 
+        self._controller_state: Optional[ControllerState] = None
+
         self._frame_getter: Optional[Thread] = None
+        self._controls_applicator: Optional[Thread] = None
 
         self._stopped: bool = False
+
+    @staticmethod
+    def _sleep(started: datetime.datetime, iteration: datetime.timedelta):
+        target = started + iteration
+        now = datetime.datetime.now()
+        if now > target:
+            return
+
+        time.sleep((target - now).total_seconds())
 
     def _get_frames(self):
         iteration = datetime.timedelta(seconds=1.0 / (float(_FPS)))
 
-        def sleep():
-            target = started + iteration
-            now = datetime.datetime.now()
-            if now > target:
-                return
-
-            time.sleep((target - now).total_seconds())
-
         while not self._stopped:
             started = datetime.datetime.now()
             if self._player is None:
-                sleep()
+                self._sleep(started, iteration)
 
                 continue
 
             self._screen.handle_image(self._player.get_frame())
 
-            sleep()
+            self._sleep(started, iteration)
+
+    def _apply_controls(self):
+        iteration = datetime.timedelta(seconds=1.0 / (float(_CONTROL_RATE)))
+
+        while not self._stopped:
+            started = datetime.datetime.now()
+            if self._player is None or self._controller_state is None:
+                self._sleep(started, iteration)
+
+                continue
+
+            self._player.apply_control(
+                throttle=self._controller_state.throttle,
+                steer=self._controller_state.steer,
+                brake=self._controller_state.brake,
+                hand_brake=self._controller_state.hand_brake,
+                reverse=self._controller_state.reverse
+            )
+
+            self._sleep(started, iteration)
 
     def _controller_callback(self, controller_state: ControllerState):
         if self._player is None:
             return
 
-        self._player.apply_control(
-            throttle=controller_state.throttle,
-            steer=controller_state.steer,
-            brake=controller_state.brake,
-            hand_brake=controller_state.hand_brake,
-            reverse=controller_state.reverse
-        )
+        self._controller_state = controller_state
 
     def start(self):
         self._stopped = False
 
         self._frame_getter = Thread(target=self._get_frames)
         self._frame_getter.start()
+
+        self._controls_applicator = Thread(target=self._apply_controls)
+        self._controls_applicator.start()
 
         self._server = Pyro4.Proxy('PYRO:carla_multiplayer@{}:13337'.format(self._host))
         self._uuid = self._server.register_player()
@@ -93,6 +115,12 @@ class Client(object):
         if self._frame_getter is not None:
             try:
                 self._frame_getter.join()
+            except RuntimeError:
+                pass
+
+        if self._controls_applicator is not None:
+            try:
+                self._controls_applicator.join()
             except RuntimeError:
                 pass
 
@@ -131,12 +159,12 @@ if __name__ == '__main__':
     stopped = False
     while not stopped:
         try:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
                     stopped = True
                     break
 
-                _client.handle_event(event)
+                _client.handle_event(e)
 
             _client.update()
 
