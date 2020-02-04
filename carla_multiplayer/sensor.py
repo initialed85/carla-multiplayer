@@ -14,6 +14,8 @@ except ImportError as e:
     ))
 
 _FPS = 24
+_WIDTH = 640
+_HEIGHT = 480
 _SENSOR_BLUEPRINT_NAME = 'sensor.camera.rgb'
 _TRANSFORM = carla.Transform(
     carla.Location(-15, 0, 5),
@@ -38,11 +40,13 @@ def to_rgb_array(image: carla.Image):
 
 class Sensor(object):
     def __init__(self, client: carla.Client, actor_id: int, transform: carla.Transform = _TRANSFORM, fps: int = _FPS,
-            sensor_blueprint_name: str = _SENSOR_BLUEPRINT_NAME):
+            width: int = _WIDTH, height: int = _HEIGHT, sensor_blueprint_name: str = _SENSOR_BLUEPRINT_NAME):
         self._client: carla.Client = client
         self._actor_id: int = actor_id
         self._transform: carla.Transform = transform
         self._fps: float = float(fps)
+        self._width: int = width
+        self._height: int = height
         self._sensor_blueprint_name = sensor_blueprint_name
 
         self._world: Optional[carla.World] = None
@@ -86,6 +90,9 @@ class Sensor(object):
 
         blueprint_library = self._world.get_blueprint_library()
         sensor_blueprint = blueprint_library.find(self._sensor_blueprint_name)
+        sensor_blueprint.set_attribute('sensor_tick', str(1.0 / self._fps))
+        sensor_blueprint.set_attribute('image_size_x', str(self._width))
+        sensor_blueprint.set_attribute('image_size_y', str(self._height))
         self._sensor = self._world.spawn_actor(
             sensor_blueprint,
             self._transform,
@@ -99,6 +106,7 @@ class Sensor(object):
         self._image_handler.start()
 
         self._sensor.listen(self._handle_image_from_sensor)
+        self._world.wait_for_tick()
 
     def stop(self):
         self._stopped = True
