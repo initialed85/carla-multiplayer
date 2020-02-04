@@ -89,6 +89,13 @@ class Server(object):
 
         return uuid
 
+    def get_player(self, uuid: UUID) -> Player:
+        player = self._players_by_uuid.pop(uuid)
+        if player is None:
+            raise ValueError('no player for {}'.format(repr(uuid)))
+
+        return player
+
     def unregister_player(self, uuid: UUID):
         player = self._players_by_uuid.pop(uuid)
         if player is None:
@@ -97,7 +104,10 @@ class Server(object):
         player.stop()
 
     def stop(self):
-        self._stopped = False
+        self._stopped = True
+
+        for uuid in self._players_by_uuid.keys():
+            self.unregister_player(uuid)
 
 
 if __name__ == '__main__':
