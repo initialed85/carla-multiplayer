@@ -11,7 +11,7 @@ except ImportError as e:
     ))
 
 _FPS = 24
-_SENSOR_BLUEPRINT_NAME = 'sensor.other.rgb'
+_SENSOR_BLUEPRINT_NAME = 'sensor.camera.rgb'
 _TRANSFORM = carla.Transform(
     carla.Location(-15, 0, 5),
     carla.Rotation(0, 0, 0)
