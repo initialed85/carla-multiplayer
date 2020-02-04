@@ -21,6 +21,7 @@ except ImportError as e:
 _DAEMON = Pyro4.Daemon(host='0.0.0.0', port=13337)
 
 
+@Pyro4.expose
 class Player(object):
     def __init__(self, client: carla.Client, uuid: UUID, transforms: List[carla.Transform]):
         self._client: carla.Client = client
@@ -84,6 +85,7 @@ class Player(object):
         self._vehicle.stop()
 
 
+@Pyro4.expose
 class Server(object):
     def __init__(self, client: carla.Client, transforms: List[carla.Transform]):
         self._client: carla.Client = client
