@@ -78,8 +78,17 @@ if __name__ == '__main__':
     client = carla.Client('localhost', 2000)
     client.set_timeout(2.0)
 
-    sensor = Sensor(client, 1)
+    sensor: Optional[Sensor] = None
+    for i in range(0, 128):
+        sensor = Sensor(client, 1)
+        try:
+            sensor.start()
+        except Exception:
+            continue
 
-    sensor.start()
+        break
+
+    if sensor is None:
+        raise RuntimeError('failed to find any actors to connect a sensor to')
 
     sensor.stop()
