@@ -73,7 +73,7 @@ class Sensor(object):
         rgb_array = to_rgb_array(image)
         pil_image = Image.fromarray(rgb_array)
         buffer = BytesIO()
-        pil_image.save(buffer, format='jpeg')
+        pil_image.save(buffer, format='webp')
         data = buffer.getvalue()
 
         self._callback(
