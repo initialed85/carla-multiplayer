@@ -18,7 +18,7 @@ except ImportError as e:
             repr(str(e))
         ))
 
-_DAEMON = Pyro4.Daemon()
+_DAEMON = Pyro4.Daemon(port=13337)
 
 
 class Player(object):
