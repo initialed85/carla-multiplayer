@@ -52,9 +52,21 @@ class Vehicle(object):
 
 
 if __name__ == '__main__':
+    import time
+
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
 
     _transform = [x for x in _client.get_world().get_actors() if 'spectator' in x.type_id][0].get_transform()
 
     _vehicle = Vehicle(_client, _transform)
+    _vehicle.start()
+
+    print('ctrl + c to exit')
+    while 1:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            break
+
+    _vehicle.stop()
