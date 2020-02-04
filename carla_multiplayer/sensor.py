@@ -75,7 +75,12 @@ class Sensor(object):
         buffer = BytesIO()
         pil_image.save(buffer, format='jpeg')
         data = buffer.getvalue()
-        print(image, pil_image, buffer, data[0:64])
+
+        self._callback(
+            carla_image=image,
+            pil_image=image,
+            data=data,
+        )
 
     def _handle_images_from_deque(self):
         while not self._stopped:
@@ -138,12 +143,16 @@ class Sensor(object):
 
 
 if __name__ == '__main__':
+    def callback(carla_image, pil_image, data):
+        print(carla_image, pil_image, data[0:64])
+
+
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
 
     _actor_id = [x.id for x in _client.get_world().get_actors()][0]
 
-    _sensor = Sensor(_client, _actor_id)
+    _sensor = Sensor(_client, _actor_id, callback)
     _sensor.start()
 
     print('ctrl + c to exit')
