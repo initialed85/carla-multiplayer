@@ -87,8 +87,7 @@ class Sensor(object):
             try:
                 image: carla.Image = self._images.popleft()
             except IndexError:
-                print('backoff on deque popleft')
-                time.sleep(0.01)
+                time.sleep(0.1)
 
                 continue
 
