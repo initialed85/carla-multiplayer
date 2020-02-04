@@ -75,8 +75,6 @@ class Vehicle(object):
             reverse=reverse
         )
 
-        print(vehicle_control)
-
         self._actor.apply_control(vehicle_control)
 
         self._last_control_timestamp = datetime.datetime.now()
