@@ -1,9 +1,11 @@
 import time
 from collections import deque
+from io import BytesIO
 from threading import Thread
 from typing import Optional
 
 import numpy
+from PIL import Image
 
 try:
     from . import wrapped_carla as carla
@@ -59,7 +61,13 @@ class Sensor(object):
         self._stopped = False
 
     def _handle_image_from_deque(self, image: carla.Image):
-        print(image)
+        rgb_array = to_rgb_array(image)
+        image = Image.fromarray(rgb_array)
+        temp = BytesIO()
+        image.save(temp, format='jpeg')
+        data = temp.getvalue()
+
+        print(image, data[0:64], data[-64:])
 
     def _handle_images_from_deque(self):
         while not self._stopped:
