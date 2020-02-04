@@ -1,28 +1,29 @@
 from io import BytesIO
+from typing import Tuple, Optional
 
 import pygame
 from PIL import Image
 
 
 class Screen(object):
-    def __init__(self, port, width, height):
-        self._port = port
-        self._width = width
-        self._height = height
+    def __init__(self, width: int, height: int):
+        self._width: int = width
+        self._height: int = height
 
-        self._dimensions = (self._width, self._height)
+        self._dimensions: Tuple[int, int] = (self._width, self._height)
 
-        self._screen = pygame.display.set_mode(
+        self._screen: pygame.SurfaceType = pygame.display.set_mode(
             self._dimensions,
             pygame.HWSURFACE | pygame.DOUBLEBUF
         )
 
-        self._image = None
+        self._last_image: Image.Image = Optional[None]
+        self._image: Image.Image = Optional[None]
 
-    def handle_image(self, data):
-        temp_input = BytesIO()
-        temp_input.write(data)
-        pil_image = Image.open(temp_input)
+    def handle_image(self, data: bytes):
+        buffer = BytesIO()
+        buffer.write(data)
+        pil_image = Image.open(buffer)
         if pil_image.size != self._dimensions:
             pil_image = pil_image.resize(self._dimensions)
 
@@ -32,8 +33,13 @@ class Screen(object):
         if self._image is None:
             return
 
+        if self._image == self._last_image:
+            return
+
         self._screen.blit(self._image, (0, 0))
         pygame.display.flip()
+
+        self._last_image = self._image
 
 
 if __name__ == '__main__':
@@ -41,7 +47,6 @@ if __name__ == '__main__':
     pygame.font.init()
 
     screen = Screen(
-        port=13337,
         width=640,
         height=480
     )

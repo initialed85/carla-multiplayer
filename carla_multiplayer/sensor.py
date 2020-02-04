@@ -97,6 +97,8 @@ class Sensor(object):
         self._images.append(image)
 
     def start(self):
+        self._stopped = False
+
         self._world = self._client.get_world()
         self._world.wait_for_tick()
 
@@ -122,7 +124,6 @@ class Sensor(object):
         )
         self._world.wait_for_tick()
 
-        self._stopped = False
         self._image_handler = Thread(target=self._handle_images_from_deque)
         self._image_handler.start()
 
@@ -150,7 +151,7 @@ if __name__ == '__main__':
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
 
-    _actor_id = [x.id for x in _client.get_world().get_actors()][0]
+    _actor_id = [x.id for x in _client.get_world().get_actors() if 'spectator' in x.type_id or 'vehicle' in x.type_id][-1]
 
     _sensor = Sensor(_client, _actor_id, callback)
     _sensor.start()
