@@ -1,3 +1,6 @@
+import datetime
+import time
+from threading import Thread
 from typing import Optional
 
 try:
@@ -30,7 +33,37 @@ class Vehicle(object):
         self._world: Optional[carla.World] = None
         self._actor: Optional[carla.Actor] = None
 
+        self._last_control_timestamp: Optional[datetime.datetime] = None
+        self._control_expirer: Optional[Thread] = None
+
         self._stopped = False
+
+    def _expire_control(self):
+        while not self._stopped:
+            if self._actor is None:
+                time.sleep(0.01)
+
+                continue
+
+            if self._last_control_timestamp is not None:
+                if datetime.datetime.now() - self._last_control_timestamp < datetime.timedelta(seconds=1):
+                    time.sleep(0.01)
+
+                    continue
+
+            self._actor.apply_control(carla.VehicleControl(brake=1.0, hand_brake=True))
+
+    def apply_control(self, throttle: float, steer: float, brake: float, hand_brake: bool, reverse: bool):
+        if self._actor is None:
+            return
+
+        self._actor.apply_control(carla.VehicleControl(
+            throttle=throttle,
+            steer=steer,
+            brake=brake,
+            hand_brake=hand_brake,
+            reverse=reverse
+        ))
 
     def start(self):
         self._stopped = False
@@ -43,17 +76,24 @@ class Vehicle(object):
         self._actor = self._world.spawn_actor(vehicle_blueprint, self._transform)
         self._world.wait_for_tick()
 
+        self._control_expirer = Thread(target=self._expire_control)
+        self._control_expirer.start()
+
     def stop(self):
         self._stopped = True
 
+        try:
+            self._control_expirer.join()
+        except RuntimeError:
+            pass
+
         if self._actor is not None:
             self._actor.destroy()
+            self._actor = None
             self._world.wait_for_tick()
 
 
 if __name__ == '__main__':
-    import time
-
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
 

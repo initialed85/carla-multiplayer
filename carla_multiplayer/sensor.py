@@ -140,6 +140,7 @@ class Sensor(object):
 
         if self._sensor is not None:
             self._sensor.destroy()
+            self._sensor = None
             self._world.wait_for_tick()
 
 
