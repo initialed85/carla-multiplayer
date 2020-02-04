@@ -2,7 +2,7 @@ import time
 from collections import deque
 from io import BytesIO
 from threading import Thread
-from typing import Optional
+from typing import Optional, Callable
 
 import numpy
 from PIL import Image
@@ -41,10 +41,19 @@ def to_rgb_array(image: carla.Image):
 
 
 class Sensor(object):
-    def __init__(self, client: carla.Client, actor_id: int, transform: carla.Transform = _TRANSFORM, fps: int = _FPS,
-            width: int = _WIDTH, height: int = _HEIGHT, sensor_blueprint_name: str = _SENSOR_BLUEPRINT_NAME):
+    def __init__(self,
+            client: carla.Client,
+            actor_id: int,
+            callback: Callable,
+            transform: carla.Transform = _TRANSFORM,
+            fps: int = _FPS,
+            width: int = _WIDTH,
+            height: int = _HEIGHT,
+            sensor_blueprint_name: str = _SENSOR_BLUEPRINT_NAME):
+
         self._client: carla.Client = client
         self._actor_id: int = actor_id
+        self._callback: Callable = callback
         self._transform: carla.Transform = transform
         self._fps: float = float(fps)
         self._width: int = width
@@ -62,12 +71,11 @@ class Sensor(object):
 
     def _handle_image_from_deque(self, image: carla.Image):
         rgb_array = to_rgb_array(image)
-        image = Image.fromarray(rgb_array)
-        temp = BytesIO()
-        image.save(temp, format='jpeg')
-        data = temp.getvalue()
-
-        print(image, data[0:64], data[-64:])
+        pil_image = Image.fromarray(rgb_array)
+        buffer = BytesIO()
+        pil_image.save(buffer, format='jpeg')
+        data = buffer.getvalue()
+        print(image, pil_image, buffer, data[0:64])
 
     def _handle_images_from_deque(self):
         while not self._stopped:
