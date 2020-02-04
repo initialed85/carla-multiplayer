@@ -18,6 +18,7 @@ _FPS = 30
 _CONTROL_RATE = 10
 
 Pyro4.config.SERIALIZER = 'pickle'
+Pyro4.config.COMPRESSION = True
 
 
 class Client(object):
@@ -57,7 +58,18 @@ class Client(object):
 
                 continue
 
-            self._screen.handle_image(self._player.get_frame())
+            before_1 = datetime.datetime.now()
+            frame = self._player.get_frame()
+            after_1 = datetime.datetime.now()
+
+            before_2 = datetime.datetime.now()
+            self._screen.handle_image(frame)
+            after_2 = datetime.datetime.now()
+
+            print('got frame in {}; handled it in {}'.format(
+                after_1 - before_1,
+                after_2 - before_2
+            ))
 
             self._sleep(started, iteration)
 
