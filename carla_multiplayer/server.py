@@ -24,9 +24,8 @@ Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
 
 @Pyro4.expose
 class Player(object):
-    def __init__(self, client_1: carla.Client, client_2: carla.Client, uuid: UUID, transforms: List[carla.Transform]):
-        self._client_1: carla.Client = client_1
-        self._client_2: carla.Client = client_2
+    def __init__(self, client: carla.Client, uuid: UUID, transforms: List[carla.Transform]):
+        self._clent: carla.Client = client
         self._uuid: UUID = uuid
         self._transforms: carla.Transform = transforms
 
@@ -47,7 +46,7 @@ class Player(object):
 
     def start(self):
         for transform in cycle(self._transforms):
-            self._vehicle = Vehicle(self._client_1, transform)
+            self._vehicle = Vehicle(self._clent, transform)
 
             try:
                 self._vehicle.start()
@@ -60,7 +59,7 @@ class Player(object):
 
                 time.sleep(1)
 
-        self._sensor = Sensor(self._client_2, self._vehicle.get_actor_id(), self._callback)
+        self._sensor = Sensor(self._client, self._vehicle.get_actor_id(), self._callback)
 
         self._sensor.start()
 
@@ -70,6 +69,7 @@ class Player(object):
     def get_transform(self):
         return self._vehicle.get_transform()
 
+    @Pyro4.oneway
     def apply_control(self, throttle: float, steer: float, brake: float, hand_brake: bool, reverse: bool):
         if self._vehicle is None:
             return
@@ -89,9 +89,8 @@ class Player(object):
 
 @Pyro4.expose
 class Server(object):
-    def __init__(self, client_1: carla.Client, client_2: carla.Client, transforms: List[carla.Transform]):
-        self._client_1: carla.Client = client_1
-        self._client_2: carla.Client = client_2
+    def __init__(self, client: carla.Client, transforms: List[carla.Transform]):
+        self._client: carla.Client = client
         self._transforms: List[carla.Transform] = transforms
 
         self._players_by_uuid: Dict[UUID, Player] = {}
@@ -105,8 +104,7 @@ class Server(object):
         uuid = uuid4()
 
         player = Player(
-            client_1=self._client_1,
-            client_2=self._client_2,
+            client=self._client,
             uuid=uuid,
             transforms=self._transforms
         )
@@ -159,15 +157,12 @@ if __name__ == '__main__':
     except Exception:
         raise SystemExit('error: first argument must be address of interface to listen on')
 
-    _client_1 = carla.Client('localhost', 2000)
-    _client_1.set_timeout(2.0)
+    _client = carla.Client('localhost', 2000)
+    _client.set_timeout(2.0)
 
-    _client_2 = carla.Client('localhost', 2000)
-    _client_2.set_timeout(2.0)
+    _transforms = [[x for x in _client.get_world().get_actors() if 'spectator' in x.type_id][0].get_transform()]
 
-    _transforms = [[x for x in _client_1.get_world().get_actors() if 'spectator' in x.type_id][0].get_transform()]
-
-    _server = Server(_client_1, _client_2, _transforms)
+    _server = Server(_client, _transforms)
     _server.start()
 
     _DAEMON = Pyro4.Daemon(host=_host, port=13337)
