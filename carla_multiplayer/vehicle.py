@@ -71,6 +71,12 @@ class Vehicle(object):
 
         return self._actor.id
 
+    def get_transform(self) -> carla.Transform:
+        if self._actor is None:
+            raise ValueError('actor is None; cannot get transform')
+
+        return self._actor.get_transform()
+
     def start(self):
         self._stopped = False
 

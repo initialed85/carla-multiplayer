@@ -1,6 +1,6 @@
 import time
 from itertools import cycle
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, NamedTuple
 from uuid import UUID, uuid4
 
 from PIL import Image
@@ -16,6 +16,23 @@ except ImportError as e:
             type(e),
             repr(str(e))
         ))
+
+
+class Location(NamedTuple):
+    x: float
+    y: float
+    z: float
+
+
+class Rotation(NamedTuple):
+    pitch: float
+    yaw: float
+    roll: float
+
+
+class Transform(NamedTuple):
+    location: Location
+    rotation: Rotation
 
 
 class Player(object):
@@ -60,6 +77,34 @@ class Player(object):
 
     def get_frame(self) -> Optional[bytes]:
         return self._frame
+
+    def get_location(self):
+        carla_transform = self._vehicle.get_transform()
+
+        return Transform(
+            Location(
+                carla_transform.location.x,
+                carla_transform.location.y,
+                carla_transform.location.z
+            ),
+            Rotation(
+                carla_transform.rotation.pitch,
+                carla_transform.rotation.yaw,
+                carla_transform.rotation.roll
+            )
+        )
+
+    def apply_control(self, throttle: float, steer: float, brake: float, hand_brake: bool, reverse: bool):
+        if self._vehicle is None:
+            return
+
+        self._vehicle.apply_control(
+            throttle=throttle,
+            steer=steer,
+            brake=brake,
+            hand_brake=hand_brake,
+            reverse=reverse
+        )
 
     def stop(self):
         self._sensor.stop()
