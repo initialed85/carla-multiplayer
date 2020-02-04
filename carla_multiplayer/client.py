@@ -2,6 +2,8 @@ from typing import Optional
 
 import Pyro4
 import pygame
+from apscheduler.job import Job
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from .controller import GamepadController, ControllerState
 from .screen import Screen
@@ -10,6 +12,7 @@ from .server import Server, Player
 _CONTROLLER_INDEX = 0
 _WIDTH = 640
 _HEIGHT = 480
+_FPS = 24
 
 Pyro4.config.SERIALIZER = 'pickle'
 
@@ -25,7 +28,16 @@ class Client(object):
         self._uuid: Optional[str] = None
         self._player: Optional[Player] = None
 
+        self._background_scheduler: BackgroundScheduler = BackgroundScheduler()
+        self._frame_getter: Optional[Job] = None
+
         self._stopped: bool = False
+
+    def _get_frame(self):
+        if self._player is None:
+            return
+
+        self._screen.handle_image(self._player.get_frame())
 
     def _controller_callback(self, controller_state: ControllerState):
         if self._player is None:
@@ -42,6 +54,13 @@ class Client(object):
     def start(self):
         self._stopped = False
 
+        self._background_scheduler.start()
+        self._frame_getter = self._background_scheduler.add_job(
+            self._get_frame,
+            'interval',
+            seconds=1.0 / float(_FPS)
+        )
+
         self._server = Pyro4.Proxy('PYRO:carla_multiplayer@{}:13337'.format(self._host))
         self._uuid = self._server.register_player()
         self._player = self._server.get_proxy_player(self._uuid)
@@ -50,10 +69,14 @@ class Client(object):
         self._controller.handle_event(event)
 
     def update(self):
+        self._screen.handle_image(self._player.get_frame())
+
         self._screen.update()
 
     def stop(self):
         self._stopped = True
+
+        self._background_scheduler.shutdown()
 
         if self._uuid is not None and self._server is not None:
             self._server.unregister_player(self._uuid)

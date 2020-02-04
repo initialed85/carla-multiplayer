@@ -1,7 +1,7 @@
 import time
 from itertools import cycle
 from typing import Dict, List, Optional
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 import Pyro4
 from PIL import Image
@@ -24,9 +24,9 @@ Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
 
 @Pyro4.expose
 class Player(object):
-    def __init__(self, client: carla.Client, uuid: str, transforms: List[carla.Transform]):
+    def __init__(self, client: carla.Client, uuid: UUID, transforms: List[carla.Transform]):
         self._client: carla.Client = client
-        self._uuid: str = uuid
+        self._uuid: UUID = uuid
         self._transforms: carla.Transform = transforms
 
         self._vehicle: Optional[Vehicle] = None
@@ -92,15 +92,15 @@ class Server(object):
         self._client: carla.Client = client
         self._transforms: List[carla.Transform] = transforms
 
-        self._players_by_uuid: Dict[str, Player] = {}
+        self._players_by_uuid: Dict[UUID, Player] = {}
 
         self._stopped: bool = False
 
     def start(self):
         self._stopped = False
 
-    def register_player(self) -> str:
-        uuid = str(uuid4())
+    def register_player(self) -> UUID:
+        uuid = uuid4()
 
         player = Player(
             client=self._client,
@@ -114,14 +114,14 @@ class Server(object):
 
         return uuid
 
-    def get_player(self, uuid: str) -> Player:
+    def get_player(self, uuid: UUID) -> Player:
         player = self._players_by_uuid.pop(uuid)
         if player is None:
             raise ValueError('no player for {}'.format(repr(uuid)))
 
         return player
 
-    def get_proxy_player(self, uuid: str) -> Player:
+    def get_proxy_player(self, uuid: UUID) -> Player:
         global _DAEMON
 
         player = self.get_player(uuid)
@@ -133,8 +133,8 @@ class Server(object):
     def get_players(self) -> List[Player]:
         return list(self._players_by_uuid.values())
 
-    def unregister_player(self, uuid: str):
-        player = self._players_by_uuid.pop(uuid)
+    def unregister_player(self, uuid: UUID):
+        player = self._players_by_uuid.pop(uuid, None)
         if player is None:
             raise ValueError('no player for {}'.format(repr(uuid)))
 

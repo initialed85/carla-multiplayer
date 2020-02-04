@@ -5,3 +5,4 @@ lark-parser==0.8.1
 pygame==1.9.6; platform_system != 'Darwin'
 numpy==1.18.1
 Pyro4==4.78
+APScheduler==3.6.3
