@@ -55,6 +55,6 @@ if __name__ == '__main__':
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
 
-    _transform = [x for x in _client.get_world().get_actors() if 'spectator' in x.type_id][0].transform
+    _transform = [x for x in _client.get_world().get_actors() if 'spectator' in x.type_id][0].get_transform()
 
     _vehicle = Vehicle(_client, _transform)
