@@ -156,6 +156,7 @@ if __name__ == '__main__':
     _server.start()
 
     _uri = _DAEMON.register(_server, 'carla_multiplayer')
+    print('listening at {}'.format(repr(_uri)))
 
     try:
         _DAEMON.requestLoop()
