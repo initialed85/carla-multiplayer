@@ -1,6 +1,4 @@
-import socket
 from io import BytesIO
-from threading import Thread
 
 import pygame
 from PIL import Image
@@ -14,20 +12,12 @@ class Screen(object):
 
         self._dimensions = (self._width, self._height)
 
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._socket.settimeout(1.0)
-        self._socket.bind(('', self._port))
-
         self._screen = pygame.display.set_mode(
             self._dimensions,
             pygame.HWSURFACE | pygame.DOUBLEBUF
         )
 
         self._image = None
-
-        self._stopped = False
-        self._images_handler = Thread(target=self.handle_images)
-        self._images_handler.start()
 
     def handle_image(self, data):
         temp_input = BytesIO()
@@ -38,25 +28,12 @@ class Screen(object):
 
         self._image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
 
-    def handle_images(self):
-        while not self._stopped:
-            try:
-                data, addr = self._socket.recvfrom(65536)
-            except socket.timeout:
-                continue
-
-            self.handle_image(data)
-
     def update(self):
         if self._image is None:
             return
 
         self._screen.blit(self._image, (0, 0))
         pygame.display.flip()
-
-    def stop(self):
-        self._stopped = True
-        self._images_handler.join()
 
 
 if __name__ == '__main__':
