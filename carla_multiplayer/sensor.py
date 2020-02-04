@@ -59,26 +59,20 @@ class Sensor(object):
         self._stopped = False
 
     def _handle_image_from_deque(self, image: carla.Image):
-        pass
+        print(image)
 
     def _handle_images_from_deque(self):
         while not self._stopped:
             try:
                 image: carla.Image = self._images.popleft()
             except IndexError:
-                print(2, 'fail')
-
                 time.sleep(0.01)
 
                 continue
 
-            print(2, image)
-
             self._handle_image_from_deque(image)
 
     def _handle_image_from_sensor(self, image: carla.Image):
-        print(1, image)
-
         self._images.append(image)
 
     def start(self):
