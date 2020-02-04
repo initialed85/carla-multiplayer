@@ -1,11 +1,11 @@
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, Tuple, Optional
 from typing import NamedTuple
 
 import pygame
 
 
 class RawControllerState(NamedTuple):
-    axis_data: Dict[int, float] = {}
+    axis_data: Dict[int, Optional[float]] = {}
     button_data: Dict[int, bool] = {}
     hat_data: Dict[int, Tuple[int, int]] = {}
 
@@ -17,19 +17,21 @@ class ControllerEventHandler(object):
         self._controller: pygame.joystick.JoystickType = pygame.joystick.Joystick(0)
         self._controller.init()
 
-        self._axis_data: Dict[int, float] = {
-            i: 0.0 for i in range(0, self._controller.get_numaxes())
+        self._axis_data: Dict[int, Optional[float]] = {
+            i: None for i in range(0, self._controller.get_numaxes())
         }
+
         self._button_data: Dict[int, bool] = {
             i: False for i in range(0, self._controller.get_numbuttons())
         }
+
         self._hat_data: Dict[int, Tuple[int, int]] = {
             i: (0, 0) for i in range(0, self._controller.get_numhats())
         }
 
     def handle_event(self, event: pygame.event.EventType):
         if event.type == pygame.JOYAXISMOTION:
-            self._axis_data[event.axis] = event.value
+            self._axis_data[event.axis] = round(event.value, 2)
         elif event.type == pygame.JOYBUTTONDOWN:
             self._button_data[event.button] = True
         elif event.type == pygame.JOYBUTTONUP:
@@ -62,7 +64,7 @@ class ControllerState(NamedTuple):
     reverse: bool
 
 
-class PS4Controller(object):
+class Controller(object):
     def __init__(self, callback: Callable):
         self._callback: Callable = callback
 
@@ -71,12 +73,33 @@ class PS4Controller(object):
         self._reverse: bool = False
 
     def _handle_callback(self, controller_state: RawControllerState):
-        throttle = round((controller_state.axis_data[5] + 1.0) / 2.0, 2)
-        brake = round((controller_state.axis_data[4] + 1.0) / 2.0, 2)
-        steer = round(controller_state.axis_data[0], 2)
-        hand_brake = controller_state.button_data[1]
-        select_forward = controller_state.hat_data[0][1] == 1
-        select_reverse = controller_state.hat_data[0][1] == -1
+        raise NotImplementedError('this method should be overridden')
+
+    def handle_event(self, event: pygame.event.EventType):
+        self._handler.handle_event(event)
+
+
+class PS4Controller(Controller):
+    def _handle_callback(self, controller_state: RawControllerState):
+        if controller_state.axis_data[5] is not None:
+            throttle = round((controller_state.axis_data[5] + 1.0) / 2.0, 2)
+        else:
+            throttle = 0.0
+
+        if controller_state.axis_data[4] is not None:
+            brake = round((controller_state.axis_data[4] + 1.0) / 2.0, 2)
+        else:
+            brake = 0.0
+
+        if controller_state.axis_data[0] is not None:
+            steer = round(controller_state.axis_data[0], 2)
+        else:
+            steer = 0.0
+
+        hand_brake = controller_state.button_data[0]
+
+        select_forward = controller_state.button_data[11] is True
+        select_reverse = controller_state.button_data[12] is True
 
         if select_forward:
             self._reverse = False
@@ -102,13 +125,12 @@ class PS4Controller(object):
             )
         )
 
-    def handle_event(self, event: pygame.event.EventType):
-        self._handler.handle_event(event)
-
 
 if __name__ == '__main__':
     def callback(controller_state: ControllerState):
         print(controller_state)
+
+        return
 
 
     pygame.init()

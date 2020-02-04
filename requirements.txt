@@ -2,3 +2,4 @@ Pillow==7.0.0
 mock==3.0.5
 pytest==5.3.5
 lark-parser==0.8.1
+pygame==1.9.6; platform_system != 'Darwin'
