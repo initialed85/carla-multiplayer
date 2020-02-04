@@ -18,7 +18,7 @@ _FPS = 30
 _CONTROL_RATE = 10
 
 Pyro4.config.SERIALIZER = 'pickle'
-Pyro4.config.COMPRESSION = True
+# Pyro4.config.COMPRESSION = True
 
 
 class Client(object):

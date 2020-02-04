@@ -20,7 +20,7 @@ except ImportError as e:
 
 Pyro4.config.SERIALIZER = 'pickle'
 Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
-Pyro4.config.COMPRESSION = True
+# Pyro4.config.COMPRESSION = True
 
 
 @Pyro4.expose
