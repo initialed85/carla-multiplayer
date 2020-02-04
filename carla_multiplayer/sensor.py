@@ -2,7 +2,7 @@ from typing import Optional
 
 import numpy
 
-from . import carla
+from . import wrapped_carla as carla
 
 _FPS = 24
 _SENSOR_BLUEPRINT_NAME = 'sensor.other.rgb'
