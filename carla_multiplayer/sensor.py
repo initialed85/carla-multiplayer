@@ -133,10 +133,11 @@ class Sensor(object):
     def stop(self):
         self._stopped = True
 
-        try:
-            self._image_handler.join()
-        except RuntimeError:
-            pass
+        if self._image_handler is not None:
+            try:
+                self._image_handler.join()
+            except RuntimeError:
+                pass
 
         if self._sensor is not None:
             self._sensor.destroy()

@@ -1,7 +1,7 @@
 import datetime
 import time
 from threading import Thread
-from typing import Optional
+from typing import Optional, NamedTuple
 
 try:
     from . import wrapped_carla as carla
@@ -14,11 +14,21 @@ except ImportError as e:
 _VEHICLE_BLUEPRINT_NAME = 'vehicle.komatsu.830e'
 
 
-def _get_transform(x: float = 0.0, y: float = 0.0, z: float = 0.0, pitch: float = 0.0, yaw: float = 0.0, roll: float = 0.0):
-    return carla.Transform(
-        carla.Location(x, y, z),
-        carla.Rotation(pitch, yaw, roll)
-    )
+class Location(NamedTuple):
+    x: float
+    y: float
+    z: float
+
+
+class Rotation(NamedTuple):
+    pitch: float
+    yaw: float
+    roll: float
+
+
+class Transform(NamedTuple):
+    location: Location
+    rotation: Rotation
 
 
 class Vehicle(object):
@@ -73,11 +83,24 @@ class Vehicle(object):
 
         return self._actor.id
 
-    def get_transform(self) -> carla.Transform:
+    def get_transform(self) -> Transform:
         if self._actor is None:
             raise ValueError('actor is None; cannot get transform')
 
-        return self._actor.get_transform()
+        carla_transform = self._actor.get_transform()
+
+        return Transform(
+            Location(
+                carla_transform.location.x,
+                carla_transform.location.y,
+                carla_transform.location.z
+            ),
+            Rotation(
+                carla_transform.rotation.pitch,
+                carla_transform.rotation.yaw,
+                carla_transform.rotation.roll
+            )
+        )
 
     def start(self):
         self._stopped = False
@@ -96,10 +119,11 @@ class Vehicle(object):
     def stop(self):
         self._stopped = True
 
-        try:
-            self._control_expirer.join()
-        except RuntimeError:
-            pass
+        if self._control_expirer is not None:
+            try:
+                self._control_expirer.join()
+            except RuntimeError:
+                pass
 
         if self._actor is not None:
             self._actor.destroy()

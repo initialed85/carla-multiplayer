@@ -1,8 +1,9 @@
 import time
 from itertools import cycle
-from typing import Dict, List, Optional, NamedTuple
+from typing import Dict, List, Optional
 from uuid import UUID, uuid4
 
+import Pyro4
 from PIL import Image
 
 from .sensor import Sensor
@@ -17,22 +18,7 @@ except ImportError as e:
             repr(str(e))
         ))
 
-
-class Location(NamedTuple):
-    x: float
-    y: float
-    z: float
-
-
-class Rotation(NamedTuple):
-    pitch: float
-    yaw: float
-    roll: float
-
-
-class Transform(NamedTuple):
-    location: Location
-    rotation: Rotation
+_DAEMON = Pyro4.Daemon()
 
 
 class Player(object):
@@ -79,20 +65,7 @@ class Player(object):
         return self._frame
 
     def get_transform(self):
-        carla_transform = self._vehicle.get_transform()
-
-        return Transform(
-            Location(
-                carla_transform.location.x,
-                carla_transform.location.y,
-                carla_transform.location.z
-            ),
-            Rotation(
-                carla_transform.rotation.pitch,
-                carla_transform.rotation.yaw,
-                carla_transform.rotation.roll
-            )
-        )
+        return self._vehicle.get_transform()
 
     def apply_control(self, throttle: float, steer: float, brake: float, hand_brake: bool, reverse: bool):
         if self._vehicle is None:
@@ -145,6 +118,15 @@ class Server(object):
 
         return player
 
+    def get_proxy_player(self, uuid: UUID) -> Player:
+        global _DAEMON
+
+        player = self.get_player(uuid)
+
+        _DAEMON.register(player)
+
+        return player
+
     def get_players(self) -> List[Player]:
         return list(self._players_by_uuid.values())
 
@@ -163,7 +145,7 @@ class Server(object):
 
 
 if __name__ == '__main__':
-    import code
+    import traceback
 
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
@@ -173,6 +155,12 @@ if __name__ == '__main__':
     _server = Server(_client, _transforms)
     _server.start()
 
-    code.interact(local=locals())
+    _uri = _DAEMON.register(_server, 'carla_multiplayer')
+
+    try:
+        _DAEMON.requestLoop()
+    except Exception as e:
+        print('caught {}; traceback follows'.format(repr(e)))
+        traceback.print_exc()
 
     _server.stop()
