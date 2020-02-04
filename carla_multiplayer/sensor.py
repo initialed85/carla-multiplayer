@@ -2,7 +2,13 @@ from typing import Optional
 
 import numpy
 
-from . import wrapped_carla as carla
+try:
+    from . import wrapped_carla as carla
+except ImportError as e:
+    raise RuntimeError('got {} stating {}; ensure you run this as a module, not a script (e.g. python -m carla_multiplayer.sensor)'.format(
+        type(e),
+        repr(str(e))
+    ))
 
 _FPS = 24
 _SENSOR_BLUEPRINT_NAME = 'sensor.other.rgb'
