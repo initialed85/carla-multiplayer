@@ -111,6 +111,8 @@ class Server(object):
 
         self._players_by_uuid[uuid] = player
 
+        print(self._players_by_uuid[uuid])
+
         return uuid
 
     def get_player(self, uuid: UUID) -> Player:
@@ -165,7 +167,7 @@ if __name__ == '__main__':
     except Exception as e:
         print('caught {}; traceback follows'.format(repr(e)))
         traceback.print_exc()
-    except KeyboardInterrupt:
-        print('shutting down')
+
+    print('shutting down')
 
     _server.stop()
