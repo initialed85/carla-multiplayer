@@ -67,13 +67,17 @@ class Vehicle(object):
         if self._actor is None:
             return
 
-        self._actor.apply_control(carla.VehicleControl(
+        vehicle_control = carla.VehicleControl(
             throttle=throttle,
             steer=steer,
             brake=brake,
             hand_brake=hand_brake,
             reverse=reverse
-        ))
+        )
+
+        print(vehicle_control)
+
+        self._actor.apply_control(vehicle_control)
 
         self._last_control_timestamp = datetime.datetime.now()
 

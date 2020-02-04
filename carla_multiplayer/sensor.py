@@ -76,6 +76,8 @@ class Sensor(object):
         pil_image.save(buffer, format='jpeg')
         data = buffer.getvalue()
 
+        print([image, pil_image])
+
         self._callback(
             carla_image=image,
             pil_image=pil_image,
