@@ -70,8 +70,9 @@ class Sensor(object):
         self._world.wait_for_tick()
 
     def stop(self):
-        self._sensor.destroy()
-        self._world.wait_for_tick()
+        if self._sensor is not None:
+            self._sensor.destroy()
+            self._world.wait_for_tick()
 
 
 if __name__ == '__main__':
@@ -80,18 +81,11 @@ if __name__ == '__main__':
     client = carla.Client('localhost', 2000)
     client.set_timeout(2.0)
 
-    sensor: Optional[Sensor] = None
-    for i in range(0, 128):
-        sensor = Sensor(client, 1)
-        try:
-            sensor.start()
-        except Exception:
-            continue
+    world = client.get_world()
+    actor_id = [x.id for x in client.get_world().get_actors()][0]
 
-        break
-
-    if sensor is None:
-        raise RuntimeError('failed to find any actors to connect a sensor to')
+    sensor = Sensor(client, actor_id)
+    sensor.start()
 
     print('ctrl + c to exit')
     while 1:
