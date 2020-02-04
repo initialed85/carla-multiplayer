@@ -62,5 +62,4 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             break
 
-    screen.stop()
     pygame.quit()

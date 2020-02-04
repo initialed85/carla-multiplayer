@@ -94,7 +94,7 @@ class Controller(object):
             return
 
         self._callback(controller_state)
-        
+
         self._last_controller_state = controller_state
 
     def _handle_callback(self, controller_state: RawControllerState):
@@ -163,24 +163,24 @@ if __name__ == '__main__':
     pygame.init()
     pygame.joystick.init()
 
-    controller = GamepadController(
+    _controller = GamepadController(
         controller_index=0,
         callback=_callback
     )
 
-    clock = pygame.time.Clock()
+    _clock = pygame.time.Clock()
 
-    stopped = False
-    while not stopped:
+    _stopped = False
+    while not _stopped:
         try:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     stopped = True
                     break
 
-                controller.handle_event(e)
+                _controller.handle_event(e)
 
-            clock.tick(24)
+            _clock.tick(24)
         except KeyboardInterrupt:
             break
 

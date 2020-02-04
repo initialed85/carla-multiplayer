@@ -1,3 +1,5 @@
+from collections import deque
+from threading import Thread
 from typing import Optional
 
 import numpy
@@ -46,6 +48,23 @@ class Sensor(object):
         self._actor: Optional[carla.Actor] = None
         self._sensor: Optional[carla.Sensor] = None
 
+        self._images = deque(maxlen=int(round(self._fps * 10, 0)))
+        self._image_handler: Optional[Thread] = None
+
+        self._stopped = False
+
+    def _handle_image_from_deque(self, image: carla.Image):
+        pass
+
+    def _handle_images_from_deque(self):
+        while not self._stopped:
+            image: carla.Image = self._images.pop()
+
+            self._handle_image_from_deque(image)
+
+    def _handle_image_from_sensor(self, image: carla.Image):
+        self._images.append(image)
+
     def start(self):
         self._world = self._client.get_world()
         self._world.wait_for_tick()
@@ -69,7 +88,20 @@ class Sensor(object):
         )
         self._world.wait_for_tick()
 
+        self._stopped = False
+        self._image_handler = Thread(target=self._handle_images_from_deque)
+        self._image_handler.start()
+
+        self._sensor.listen(self._handle_image_from_sensor)
+
     def stop(self):
+        self._stopped = True
+
+        try:
+            self._image_handler.join()
+        except RuntimeError:
+            pass
+
         if self._sensor is not None:
             self._sensor.destroy()
             self._world.wait_for_tick()
@@ -78,14 +110,13 @@ class Sensor(object):
 if __name__ == '__main__':
     import time
 
-    client = carla.Client('localhost', 2000)
-    client.set_timeout(2.0)
+    _client = carla.Client('localhost', 2000)
+    _client.set_timeout(2.0)
 
-    world = client.get_world()
-    actor_id = [x.id for x in client.get_world().get_actors()][0]
+    _actor_id = [x.id for x in _client.get_world().get_actors()][0]
 
-    sensor = Sensor(client, actor_id)
-    sensor.start()
+    _sensor = Sensor(_client, _actor_id)
+    _sensor.start()
 
     print('ctrl + c to exit')
     while 1:
@@ -94,4 +125,4 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             break
 
-    sensor.stop()
+    _sensor.stop()
