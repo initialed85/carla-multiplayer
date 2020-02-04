@@ -17,7 +17,7 @@ except ImportError as e:
 
 _FPS = 24
 _WIDTH = 640
-_HEIGHT = 480
+_HEIGHT = 360
 _SENSOR_BLUEPRINT_NAME = 'sensor.camera.rgb'
 _TRANSFORM = carla.Transform(
     carla.Location(-15, 0, 5),

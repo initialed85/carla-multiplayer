@@ -47,8 +47,8 @@ if __name__ == '__main__':
     pygame.font.init()
 
     screen = Screen(
-        width=640,
-        height=480
+        width=1280,
+        height=720
     )
 
     clock = pygame.time.Clock()

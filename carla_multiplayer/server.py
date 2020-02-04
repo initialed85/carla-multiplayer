@@ -18,7 +18,7 @@ except ImportError as e:
             repr(str(e))
         ))
 
-_DAEMON = Pyro4.Daemon(host='10.5.0.1', port=13337)
+Pyro4.config.SERIALIZER = 'dill'
 
 
 @Pyro4.expose
@@ -148,6 +148,12 @@ class Server(object):
 
 if __name__ == '__main__':
     import traceback
+    import sys
+
+    try:
+        _host = sys.argv[1]
+    except Exception:
+        raise SystemExit('error: first argument must be address of interface to listen on')
 
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
@@ -156,6 +162,8 @@ if __name__ == '__main__':
 
     _server = Server(_client, _transforms)
     _server.start()
+
+    _DAEMON = Pyro4.Daemon(host=_host, port=13337)
 
     _uri = _DAEMON.register(_server, 'carla_multiplayer')
     print('listening at {}'.format(repr(_uri)))
