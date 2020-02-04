@@ -14,7 +14,7 @@ from .server import Server, Player
 _CONTROLLER_INDEX = 0
 _WIDTH = 1280
 _HEIGHT = 720
-_FPS = 24
+_FPS = 30
 _CONTROL_RATE = 10
 
 Pyro4.config.SERIALIZER = 'pickle'
@@ -152,6 +152,8 @@ if __name__ == '__main__':
 
         traceback.print_exc()
 
+        raise SyntaxError('error: failed to start client')
+
     clock = pygame.time.Clock()
 
     print('connected')
@@ -168,7 +170,7 @@ if __name__ == '__main__':
 
             _client.update()
 
-            clock.tick(_FPS)
+            clock.tick(_FPS * 2)
         except KeyboardInterrupt:
             break
 
