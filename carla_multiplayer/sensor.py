@@ -78,7 +78,7 @@ class Sensor(object):
 
         self._callback(
             carla_image=image,
-            pil_image=image,
+            pil_image=pil_image,
             data=data,
         )
 
