@@ -115,7 +115,7 @@ class Server(object):
         return uuid
 
     def get_player(self, uuid: UUID) -> Player:
-        player = self._players_by_uuid.pop(uuid)
+        player = self._players_by_uuid.get(uuid)
         if player is None:
             raise ValueError('no player for {}'.format(repr(uuid)))
 

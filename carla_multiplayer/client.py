@@ -35,15 +35,15 @@ class Client(object):
         self._stopped: bool = False
 
     def _get_frames(self):
-        target = datetime.timedelta(1.0 / float(_FPS))
-        zero = datetime.timedelta(seconds=0)
+        iteration = datetime.timedelta(seconds=1.0 / (float(_FPS)))
 
         def sleep():
+            target = started + iteration
             now = datetime.datetime.now()
-            worked = now - started
-            remainder = target - worked
-            if remainder > zero:
-                time.sleep(remainder.total_seconds())
+            if now > target:
+                return
+
+            time.sleep((target - now).total_seconds())
 
         while not self._stopped:
             started = datetime.datetime.now()
@@ -52,9 +52,9 @@ class Client(object):
 
                 continue
 
-        self._screen.handle_image(self._player.get_frame())
+            self._screen.handle_image(self._player.get_frame())
 
-        sleep()
+            sleep()
 
     def _controller_callback(self, controller_state: ControllerState):
         if self._player is None:
@@ -82,9 +82,10 @@ class Client(object):
         self._controller.handle_event(event)
 
     def update(self):
-        self._screen.handle_image(self._player.get_frame())
-
-        self._screen.update()
+        try:
+            self._screen.update()
+        except Exception:
+            pass
 
     def stop(self):
         self._stopped = True
@@ -137,7 +138,7 @@ if __name__ == '__main__':
 
             _client.update()
 
-            clock.tick(24)
+            clock.tick(_FPS * 2)
         except KeyboardInterrupt:
             break
 
