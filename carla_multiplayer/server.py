@@ -27,8 +27,13 @@ class Player(object):
         self._vehicle: Optional[Vehicle] = None
         self._sensor: Optional[Sensor] = None
 
+        self._frame: Optional[bytes] = None
+
     def _callback(self, carla_image: carla.Image, pil_image: Image.Image, data: bytes):
-        print(carla_image, pil_image)
+        _ = carla_image
+        _ = pil_image
+
+        self._frame = data
 
     def start(self):
         for transform in cycle(self._transforms):
@@ -49,6 +54,9 @@ class Player(object):
 
         self._sensor.start()
 
+    def get_frame(self) -> Optional[bytes]:
+        return self._frame
+
     def stop(self):
         self._sensor.stop()
         self._vehicle.stop()
@@ -66,7 +74,7 @@ class Server(object):
     def start(self):
         self._stopped = False
 
-    def register_player(self):
+    def register_player(self) -> UUID:
         uuid = uuid4()
 
         player = Player(

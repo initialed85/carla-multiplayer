@@ -65,7 +65,7 @@ class Vehicle(object):
             reverse=reverse
         ))
 
-    def get_actor_id(self):
+    def get_actor_id(self) -> int:
         if self._actor is None:
             raise ValueError('actor is None; cannot get id')
 
