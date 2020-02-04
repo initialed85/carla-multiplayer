@@ -3,6 +3,8 @@ from itertools import cycle
 from typing import Dict, List, Optional
 from uuid import UUID, uuid4
 
+from PIL import Image
+
 from .sensor import Sensor
 from .vehicle import Vehicle
 
@@ -25,6 +27,9 @@ class Player(object):
         self._vehicle: Optional[Vehicle] = None
         self._sensor: Optional[Sensor] = None
 
+    def _callback(self, carla_image: carla.Image, pil_image: Image.Image, data: bytes):
+        print(carla_image, pil_image)
+
     def start(self):
         for transform in cycle(self._transforms):
             self._vehicle = Vehicle(self._client, transform)
@@ -40,7 +45,12 @@ class Player(object):
 
                 time.sleep(1)
 
+        self._sensor = Sensor(self._client, self._vehicle.get_actor_id(), self._callback)
+
+        self._sensor.start()
+
     def stop(self):
+        self._sensor.stop()
         self._vehicle.stop()
 
 
