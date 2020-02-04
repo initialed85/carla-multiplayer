@@ -65,6 +65,8 @@ class Vehicle(object):
             reverse=reverse
         ))
 
+        self._last_control_timestamp = datetime.datetime.now()
+
     def get_actor_id(self) -> int:
         if self._actor is None:
             raise ValueError('actor is None; cannot get id')
