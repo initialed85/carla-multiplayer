@@ -25,7 +25,7 @@ Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
 @Pyro4.expose
 class Player(object):
     def __init__(self, client: carla.Client, uuid: UUID, transforms: List[carla.Transform]):
-        self._clent: carla.Client = client
+        self._client: carla.Client = client
         self._uuid: UUID = uuid
         self._transforms: carla.Transform = transforms
 
@@ -46,7 +46,7 @@ class Player(object):
 
     def start(self):
         for transform in cycle(self._transforms):
-            self._vehicle = Vehicle(self._clent, transform)
+            self._vehicle = Vehicle(self._client, transform)
 
             try:
                 self._vehicle.start()
