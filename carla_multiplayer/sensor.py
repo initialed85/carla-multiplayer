@@ -75,6 +75,8 @@ class Sensor(object):
 
 
 if __name__ == '__main__':
+    import time
+
     client = carla.Client('localhost', 2000)
     client.set_timeout(2.0)
 
@@ -90,5 +92,12 @@ if __name__ == '__main__':
 
     if sensor is None:
         raise RuntimeError('failed to find any actors to connect a sensor to')
+
+    print('ctrl + c to exit')
+    while 1:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            break
 
     sensor.stop()
