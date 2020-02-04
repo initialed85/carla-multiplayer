@@ -1,3 +1,4 @@
+import time
 from collections import deque
 from threading import Thread
 from typing import Optional
@@ -58,7 +59,12 @@ class Sensor(object):
 
     def _handle_images_from_deque(self):
         while not self._stopped:
-            image: carla.Image = self._images.pop()
+            try:
+                image: carla.Image = self._images.pop()
+            except IndexError:
+                time.sleep(0.01)
+
+                continue
 
             self._handle_image_from_deque(image)
 
@@ -108,8 +114,6 @@ class Sensor(object):
 
 
 if __name__ == '__main__':
-    import time
-
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
 
