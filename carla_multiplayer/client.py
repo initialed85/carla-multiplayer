@@ -11,7 +11,7 @@ _CONTROLLER_INDEX = 0
 _WIDTH = 640
 _HEIGHT = 480
 
-Pyro4.config.SERIALIZER = 'dill'
+Pyro4.config.SERIALIZER = 'pickle'
 
 
 class Client(object):

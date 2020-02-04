@@ -18,7 +18,7 @@ except ImportError as e:
             repr(str(e))
         ))
 
-Pyro4.config.SERIALIZER = 'dill'
+Pyro4.config.SERIALIZER = 'pickle'
 
 
 @Pyro4.expose
