@@ -135,7 +135,7 @@ class GamepadController(Controller):
         elif select_reverse:
             self._reverse = True
 
-        if -0.12 <= steer <= 0.12:
+        if -0.16 <= steer <= 0.16:
             steer = 0.0
 
         if not callable(self._callback):
