@@ -1,9 +1,11 @@
+import datetime
+import time
+from threading import Thread
 from typing import Optional
+from uuid import UUID
 
 import Pyro4
 import pygame
-from apscheduler.job import Job
-from apscheduler.schedulers.background import BackgroundScheduler
 
 from .controller import GamepadController, ControllerState
 from .screen import Screen
@@ -25,19 +27,34 @@ class Client(object):
         self._controller: GamepadController = GamepadController(_CONTROLLER_INDEX, self._controller_callback)
 
         self._server: Optional[Server] = None
-        self._uuid: Optional[str] = None
+        self._uuid: Optional[UUID] = None
         self._player: Optional[Player] = None
 
-        self._background_scheduler: BackgroundScheduler = BackgroundScheduler()
-        self._frame_getter: Optional[Job] = None
+        self._frame_getter: Optional[Thread] = None
 
         self._stopped: bool = False
 
-    def _get_frame(self):
-        if self._player is None:
-            return
+    def _get_frames(self):
+        target = datetime.timedelta(1.0 / float(_FPS))
+        zero = datetime.timedelta(seconds=0)
+
+        def sleep():
+            now = datetime.datetime.now()
+            worked = now - started
+            remainder = target - worked
+            if remainder > zero:
+                time.sleep(remainder.total_seconds())
+
+        while not self._stopped:
+            started = datetime.datetime.now()
+            if self._player is None:
+                sleep()
+
+                continue
 
         self._screen.handle_image(self._player.get_frame())
+
+        sleep()
 
     def _controller_callback(self, controller_state: ControllerState):
         if self._player is None:
@@ -54,12 +71,8 @@ class Client(object):
     def start(self):
         self._stopped = False
 
-        self._background_scheduler.start()
-        self._frame_getter = self._background_scheduler.add_job(
-            self._get_frame,
-            'interval',
-            seconds=1.0 / float(_FPS)
-        )
+        self._frame_getter = Thread(target=self._get_frames)
+        self._frame_getter.start()
 
         self._server = Pyro4.Proxy('PYRO:carla_multiplayer@{}:13337'.format(self._host))
         self._uuid = self._server.register_player()
@@ -76,7 +89,11 @@ class Client(object):
     def stop(self):
         self._stopped = True
 
-        self._background_scheduler.shutdown()
+        if self._frame_getter is not None:
+            try:
+                self._frame_getter.join()
+            except RuntimeError:
+                pass
 
         if self._uuid is not None and self._server is not None:
             self._server.unregister_player(self._uuid)
