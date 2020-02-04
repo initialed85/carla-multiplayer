@@ -18,7 +18,7 @@ except ImportError as e:
             repr(str(e))
         ))
 
-_DAEMON = Pyro4.Daemon(host='0.0.0.0', port=13337)
+_DAEMON = Pyro4.Daemon(host='10.5.0.1', port=13337)
 
 
 @Pyro4.expose
