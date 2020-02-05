@@ -1,3 +1,4 @@
+import copy
 import time
 from collections import deque
 from io import BytesIO
@@ -64,7 +65,7 @@ class Sensor(object):
         self._actor: Optional[carla.Actor] = None
         self._sensor: Optional[carla.Sensor] = None
 
-        self._images = deque(maxlen=int(round(self._fps * 10, 0)))
+        self._images = deque(maxlen=int(round(self._fps, 0)))
         self._image_handler: Optional[Thread] = None
 
         self._stopped: bool = False
@@ -85,7 +86,7 @@ class Sensor(object):
     def _handle_images_from_deque(self):
         while not self._stopped:
             try:
-                image: carla.Image = self._images.pop()
+                image: carla.Image = self._images.popleft()
             except IndexError:
                 time.sleep(0.1)
 
@@ -94,7 +95,7 @@ class Sensor(object):
             self._handle_image_from_deque(image)
 
     def _handle_image_from_sensor(self, image: carla.Image):
-        self._images.append(image)
+        self._images.append(copy.deepcopy(image))
 
     def start(self):
         self._stopped = False
