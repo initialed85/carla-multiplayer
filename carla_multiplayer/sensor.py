@@ -85,7 +85,7 @@ class Sensor(object):
     def _handle_images_from_deque(self):
         while not self._stopped:
             try:
-                image: carla.Image = self._images.popleft()
+                image: carla.Image = self._images.pop()
             except IndexError:
                 time.sleep(0.1)
 
