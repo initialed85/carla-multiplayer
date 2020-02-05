@@ -72,6 +72,7 @@ class ControllerState(NamedTuple):
     steer: float
     hand_brake: bool
     reverse: bool
+    reset: bool
 
 
 class Controller(object):
@@ -135,6 +136,8 @@ class GamepadController(Controller):
         elif select_reverse:
             self._reverse = True
 
+        reset = controller_state.button_data[6]
+
         if -0.16 <= steer <= 0.16:
             steer = 0.0
 
@@ -149,7 +152,8 @@ class GamepadController(Controller):
             brake=brake,
             steer=steer,
             hand_brake=hand_brake,
-            reverse=self._reverse
+            reverse=self._reverse,
+            reset=reset
         )
 
 

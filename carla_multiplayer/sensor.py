@@ -15,7 +15,7 @@ except ImportError as e:
         repr(str(e))
     ))
 
-_FPS = 30
+_FPS = 24
 _WIDTH = 640
 _HEIGHT = 360
 _SENSOR_BLUEPRINT_NAME = 'sensor.camera.rgb'
