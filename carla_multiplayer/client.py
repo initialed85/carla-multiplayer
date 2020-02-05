@@ -18,7 +18,6 @@ _FPS = 24
 _CONTROL_RATE = 5
 
 Pyro4.config.SERIALIZER = 'pickle'
-# Pyro4.config.COMPRESSION = True
 
 
 class Client(object):
@@ -79,7 +78,8 @@ class Client(object):
                 steer=self._controller_state.steer,
                 brake=self._controller_state.brake,
                 hand_brake=self._controller_state.hand_brake,
-                reverse=self._controller_state.reverse
+                reverse=self._controller_state.reverse,
+                reset=self._controller_state.reset
             )
 
             self._sleep(started, iteration)

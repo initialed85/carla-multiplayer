@@ -46,6 +46,8 @@ class Vehicle(object):
         self._last_control_timestamp: Optional[datetime.datetime] = None
         self._control_expirer: Optional[Thread] = None
 
+        self._last_reset: Optional[datetime.datetime] = None
+
         self._stopped: bool = False
 
     def _expire_control(self):
@@ -63,9 +65,21 @@ class Vehicle(object):
 
             self._actor.apply_control(carla.VehicleControl(brake=1.0, hand_brake=True))
 
-    def apply_control(self, throttle: float, steer: float, brake: float, hand_brake: bool, reverse: bool):
+    def apply_control(self, throttle: float, steer: float, brake: float, hand_brake: bool, reverse: bool, reset: bool):
         if self._actor is None:
             return
+
+        now = datetime.datetime.now()
+
+        if reset:
+            if self._last_reset is None or (now - self._last_reset).total_seconds() > 1:
+                transform = self._actor.get_transform()
+                transform.location.y += 5
+                transform.rotation.roll = 0.0
+                transform.rotation.pitch = 0.0
+                self._actor.set_transform(transform)
+
+                self._last_reset = now
 
         vehicle_control = carla.VehicleControl(
             throttle=throttle,
@@ -77,7 +91,7 @@ class Vehicle(object):
 
         self._actor.apply_control(vehicle_control)
 
-        self._last_control_timestamp = datetime.datetime.now()
+        self._last_control_timestamp = now
 
     def get_actor_id(self) -> int:
         if self._actor is None:

@@ -20,6 +20,8 @@ except ImportError as e:
 
 Pyro4.config.SERIALIZER = 'pickle'
 Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
+
+
 # Pyro4.config.COMPRESSION = True
 
 
@@ -71,7 +73,7 @@ class Player(object):
         return self._vehicle.get_transform()
 
     @Pyro4.oneway
-    def apply_control(self, throttle: float, steer: float, brake: float, hand_brake: bool, reverse: bool):
+    def apply_control(self, throttle: float, steer: float, brake: float, hand_brake: bool, reverse: bool, reset: bool):
         if self._vehicle is None:
             return
 
@@ -80,7 +82,8 @@ class Player(object):
             steer=steer,
             brake=brake,
             hand_brake=hand_brake,
-            reverse=reverse
+            reverse=reverse,
+            reset=reset
         )
 
     def stop(self):
