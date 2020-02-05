@@ -21,6 +21,9 @@ class Screen(object):
         self._image: Image.Image = Optional[None]
 
     def handle_image(self, data: bytes):
+        if data is None:
+            return
+
         buffer = BytesIO()
         buffer.write(data)
         pil_image = Image.open(buffer)
