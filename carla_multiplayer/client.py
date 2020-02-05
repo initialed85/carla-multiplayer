@@ -21,8 +21,9 @@ Pyro4.config.SERIALIZER = 'pickle'
 
 
 class Client(object):
-    def __init__(self, host: str):
+    def __init__(self, host: str, blueprint_name: str):
         self._host: str = host
+        self._blueprint_name: str = blueprint_name
 
         self._screen: Screen = Screen(_WIDTH, _HEIGHT)
         self._controller: GamepadController = GamepadController(_CONTROLLER_INDEX, self._controller_callback)
@@ -100,7 +101,7 @@ class Client(object):
         self._controls_applicator.start()
 
         self._server = Pyro4.Proxy('PYRO:carla_multiplayer@{}:13337'.format(self._host))
-        self._uuid = self._server.register_player()
+        self._uuid = self._server.register_player(self._blueprint_name)
         self._player = self._server.get_proxy_player(self._uuid)
 
     def handle_event(self, event: pygame.event.EventType):
@@ -140,11 +141,16 @@ if __name__ == '__main__':
     except Exception:
         raise SystemExit('error: first argument must be address of address to connect to')
 
+    try:
+        _blueprint_name = sys.argv[2]
+    except Exception:
+        raise SystemExit('error: second argument must be name of blueprint to use (e.g. "vehicle.komatsu.830e")')
+
     pygame.init()
     pygame.font.init()
     pygame.joystick.init()
 
-    _client = Client(_host)
+    _client = Client(_host, _blueprint_name)
 
     print('connecting')
 

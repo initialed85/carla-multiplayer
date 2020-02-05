@@ -22,15 +22,13 @@ Pyro4.config.SERIALIZER = 'pickle'
 Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
 
 
-# Pyro4.config.COMPRESSION = True
-
-
 @Pyro4.expose
 class Player(object):
-    def __init__(self, client: carla.Client, uuid: UUID, transforms: List[carla.Transform]):
+    def __init__(self, client: carla.Client, uuid: UUID, transforms: List[carla.Transform], blueprint_name: str):
         self._client: carla.Client = client
         self._uuid: UUID = uuid
         self._transforms: carla.Transform = transforms
+        self._blueprint_name: str = blueprint_name
 
         self._vehicle: Optional[Vehicle] = None
         self._sensor: Optional[Sensor] = None
@@ -49,7 +47,7 @@ class Player(object):
 
     def start(self):
         for transform in cycle(self._transforms):
-            self._vehicle = Vehicle(self._client, transform)
+            self._vehicle = Vehicle(self._client, transform, self._blueprint_name)
 
             try:
                 self._vehicle.start()
@@ -104,13 +102,14 @@ class Server(object):
     def start(self):
         self._stopped = False
 
-    def register_player(self) -> UUID:
+    def register_player(self, blueprint_name) -> UUID:
         uuid = uuid4()
 
         player = Player(
             client=self._client,
             uuid=uuid,
-            transforms=self._transforms
+            transforms=self._transforms,
+            blueprint_name=blueprint_name
         )
 
         player.start()
