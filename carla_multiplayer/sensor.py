@@ -133,6 +133,18 @@ class Sensor(object):
         self._sensor.listen(self._handle_image_from_sensor)
         self._world.wait_for_tick()
 
+    def adjust_camera(self, camera_yaw: float, camera_pitch: float):
+        if self._sensor is None:
+            return
+
+        if camera_yaw == 0.0 or camera_pitch == 0.0:
+            return
+
+        transform = self._sensor.get_transform()
+        transform.rotation.yaw += camera_yaw
+        transform.rotation.pitch += camera_pitch
+        self._sensor.set_transform(transform)
+
     def stop(self):
         self._stopped = True
 

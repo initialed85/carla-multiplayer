@@ -79,8 +79,14 @@ class Client(object):
                 brake=self._controller_state.brake,
                 hand_brake=self._controller_state.hand_brake,
                 reverse=self._controller_state.reverse,
-                reset=self._controller_state.reset
+                reset=self._controller_state.reset,
             )
+
+            if self._controller_state.camera_yaw != 0.0 or self._controller_state.camera_pitch != 0.0:
+                self._player.adjust_camera(
+                    camera_yaw=self._controller_state.camera_yaw,
+                    camera_pitch=self._controller_state.camera_pitch
+                )
 
             self._sleep(started, iteration)
 

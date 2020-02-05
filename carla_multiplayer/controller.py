@@ -73,6 +73,8 @@ class ControllerState(NamedTuple):
     hand_brake: bool
     reverse: bool
     reset: bool
+    camera_yaw: float
+    camera_pitch: float
 
 
 class Controller(object):
@@ -116,6 +118,16 @@ class GamepadController(Controller):
         else:
             throttle = 0.0
 
+        if controller_state.axis_data[2] is not None:
+            camera_yaw = round(controller_state.axis_data[2], 2)
+        else:
+            camera_yaw = 0.0
+
+        if controller_state.axis_data[3] is not None:
+            camera_pitch = round(controller_state.axis_data[3], 2)
+        else:
+            camera_pitch = 0.0
+
         if controller_state.axis_data[4] is not None:
             brake = round((controller_state.axis_data[4] + 1.0) / 2.0, 2)
         else:
@@ -141,6 +153,12 @@ class GamepadController(Controller):
         if -0.16 <= steer <= 0.16:
             steer = 0.0
 
+        if -0.16 <= camera_yaw <= 0.16:
+            camera_yaw = 0.0
+
+        if -0.16 <= camera_pitch <= 0.16:
+            camera_pitch = 0.0
+
         if not callable(self._callback):
             raise TypeError('expected {}} to be callable but was {}'.format(
                 repr(self._callback),
@@ -153,7 +171,9 @@ class GamepadController(Controller):
             steer=steer,
             hand_brake=hand_brake,
             reverse=self._reverse,
-            reset=reset
+            reset=reset,
+            camera_yaw=camera_yaw,
+            camera_pitch=camera_pitch
         )
 
 

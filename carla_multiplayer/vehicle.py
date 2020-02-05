@@ -73,11 +73,11 @@ class Vehicle(object):
 
         if reset:
             if self._last_reset is None or (now - self._last_reset).total_seconds() > 1:
-                transform = self._actor.get_transform()
-                transform.location.z += 5
-                transform.rotation.roll = 0.0
-                transform.rotation.pitch = 0.0
-                self._actor.set_transform(transform)
+                actor_transform = self._actor.get_transform()
+                actor_transform.location.z += 5
+                actor_transform.rotation.roll = 0.0
+                actor_transform.rotation.pitch = 0.0
+                self._actor.set_transform(actor_transform)
 
                 self._last_reset = now
 
@@ -86,7 +86,7 @@ class Vehicle(object):
             steer=steer,
             brake=brake,
             hand_brake=hand_brake,
-            reverse=reverse
+            reverse=reverse,
         )
 
         self._actor.apply_control(vehicle_control)
