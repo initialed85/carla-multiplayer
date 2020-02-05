@@ -74,7 +74,7 @@ class Vehicle(object):
         if reset:
             if self._last_reset is None or (now - self._last_reset).total_seconds() > 1:
                 transform = self._actor.get_transform()
-                transform.location.y += 5
+                transform.location.z += 5
                 transform.rotation.roll = 0.0
                 transform.rotation.pitch = 0.0
                 self._actor.set_transform(transform)
