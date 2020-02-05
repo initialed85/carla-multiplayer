@@ -49,24 +49,24 @@ if __name__ == '__main__':
     pygame.init()
     pygame.font.init()
 
-    screen = Screen(
+    _screen = Screen(
         width=1280,
         height=720
     )
 
-    clock = pygame.time.Clock()
+    _clock = pygame.time.Clock()
 
-    stopped = False
-    while not stopped:
+    _stopped = False
+    while not _stopped:
         try:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    stopped = True
+                    _stopped = True
                     break
 
-            screen.update()
+            _screen.update()
 
-            clock.tick(24)
+            _clock.tick(24)
         except KeyboardInterrupt:
             break
 

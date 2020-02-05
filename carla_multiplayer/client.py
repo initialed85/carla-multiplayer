@@ -1,13 +1,14 @@
 import datetime
 import time
 from threading import Thread
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 
 import Pyro4
 import pygame
 
-from .controller import GamepadController, ControllerState
+from .controller_gamepad import GamepadController, ControllerState
+from .controller_keyboard_and_mouse import KeyboardAndMouseController
 from .screen import Screen
 from .server import Server, Player
 
@@ -21,12 +22,17 @@ Pyro4.config.SERIALIZER = 'pickle'
 
 
 class Client(object):
-    def __init__(self, host: str, blueprint_name: str):
+    def __init__(self, host: str, blueprint_name: str, use_keyboard: bool):
         self._host: str = host
         self._blueprint_name: str = blueprint_name
 
+        if use_keyboard:
+            controller = KeyboardAndMouseController(self._controller_callback, _WIDTH, _HEIGHT)
+        else:
+            controller = GamepadController(_CONTROLLER_INDEX, self._controller_callback)
+
         self._screen: Screen = Screen(_WIDTH, _HEIGHT)
-        self._controller: GamepadController = GamepadController(_CONTROLLER_INDEX, self._controller_callback)
+        self._controller: Union[GamepadController, KeyboardAndMouseController] = controller
 
         self._server: Optional[Server] = None
         self._uuid: Optional[UUID] = None
@@ -146,11 +152,20 @@ if __name__ == '__main__':
     except Exception:
         raise SystemExit('error: second argument must be name of blueprint to use (e.g. "vehicle.komatsu.830e")')
 
+    try:
+        _ = sys.argv[3]
+
+        _use_keyboard = True
+
+        print('info: third argument present- using keyboard instead of gamepad')
+    except Exception:
+        _use_keyboard = False
+
     pygame.init()
     pygame.font.init()
     pygame.joystick.init()
 
-    _client = Client(_host, _blueprint_name)
+    _client = Client(_host, _blueprint_name, _use_keyboard)
 
     print('connecting')
 
@@ -163,23 +178,23 @@ if __name__ == '__main__':
 
         raise SyntaxError('error: failed to start client')
 
-    clock = pygame.time.Clock()
+    _clock = pygame.time.Clock()
 
     print('connected')
 
-    stopped = False
-    while not stopped:
+    _stopped = False
+    while not _stopped:
         try:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
-                    stopped = True
+                    _stopped = True
                     break
 
                 _client.handle_event(e)
 
             _client.update()
 
-            clock.tick(_FPS * 2)
+            _clock.tick(_FPS * 2)
         except KeyboardInterrupt:
             break
 
