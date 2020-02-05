@@ -64,7 +64,7 @@ class Sensor(object):
         self._actor: Optional[carla.Actor] = None
         self._sensor: Optional[carla.Sensor] = None
 
-        self._images = deque(maxlen=int(round(self._fps, 0)))
+        self._images = deque(maxlen=2)
         self._image_handler: Optional[Thread] = None
 
         self._stopped: bool = False
