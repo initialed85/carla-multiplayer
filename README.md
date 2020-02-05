@@ -10,7 +10,7 @@ Multiplayer Carla using a ghetto game-streaming concept
 - install the requirements
     - `pip install -r requirements.txt`
 - install pygame (special process for MacOS)
-    - `brew upgrade sdl sdl_image sdl_mixer sdl_ttf portmidi`
+    - `brew install sdl sdl_image sdl_mixer sdl_ttf portmidi`
     - `pip install https://github.com/pygame/pygame/archive/master.zip`
 - if you're using an Xbox 360 controller; install 360Controller/360Controller
     - https://github.com/360Controller/360Controller/releases/tag/v1.0.0-alpha.5
