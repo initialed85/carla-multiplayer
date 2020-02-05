@@ -86,16 +86,6 @@ class Player(object):
             reset=reset
         )
 
-    @Pyro4.oneway
-    def adjust_camera(self, camera_yaw: float, camera_pitch: float):
-        if self._sensor is None:
-            return
-
-        self._sensor.adjust_camera(
-            camera_yaw=camera_yaw,
-            camera_pitch=camera_pitch
-        )
-
     def stop(self):
         self._sensor.stop()
         self._vehicle.stop()
