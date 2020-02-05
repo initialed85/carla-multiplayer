@@ -21,7 +21,7 @@ _HEIGHT = 360
 _SENSOR_BLUEPRINT_NAME = 'sensor.camera.rgb'
 _TRANSFORM = carla.Transform(
     carla.Location(-15, 0, 15),
-    carla.Rotation(-5, 0, 0)
+    carla.Rotation(16.875, 0, 0)
 )
 
 
