@@ -1,4 +1,3 @@
-import copy
 import time
 from collections import deque
 from io import BytesIO
@@ -95,7 +94,7 @@ class Sensor(object):
             self._handle_image_from_deque(image)
 
     def _handle_image_from_sensor(self, image: carla.Image):
-        self._images.append(copy.deepcopy(image))
+        self._images.append(image)
 
     def start(self):
         self._stopped = False
