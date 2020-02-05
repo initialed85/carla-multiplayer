@@ -87,7 +87,7 @@ class Sensor(object):
             try:
                 image: carla.Image = self._images.popleft()
             except IndexError:
-                time.sleep(0.001)
+                time.sleep(0.1)
 
                 continue
 
