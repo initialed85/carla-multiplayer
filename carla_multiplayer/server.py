@@ -1,5 +1,4 @@
 import time
-import traceback
 from itertools import cycle
 from typing import Dict, List, Optional
 from uuid import uuid4, UUID
@@ -13,9 +12,6 @@ from .vehicle import Vehicle
 try:
     from . import wrapped_carla as carla
 except ImportError as e:
-    print('failed to import carla; traceback follows, objects are mocked')
-    traceback.print_exc()
-
     raise RuntimeError(
         'got {} stating {}; ensure you run this as a module, not a script (e.g. python -m carla_multiplayer.server)'.format(
             type(e),
