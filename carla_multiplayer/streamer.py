@@ -47,22 +47,22 @@ class _Client(_Looper):
     def _loop(self):
         while not self._stopped:
             while not self._stopped:
-                timeout = self._socket.gettimeout()
-                try:
-                    self._socket.settimeout(0)
-                    data = self._socket.recv(1024).decode('utf-8')
-                    if 'stop' in data:
-                        print('info: shutdown at remote request')
-                        self._stopped = True
-                        break
-                except socket.error:
-                    pass
-                except Exception as e:
-                    print('error: caught {} trying to read data from socket; closing'.format(repr(e)))
-                    self._stopped = True
-                    break
-                finally:
-                    self._socket.settimeout(timeout)
+                # timeout = self._socket.gettimeout()
+                # try:
+                #     self._socket.settimeout(0)
+                #     data = self._socket.recv(1024).decode('utf-8')
+                #     if 'stop' in data:
+                #         print('info: shutdown at remote request')
+                #         self._stopped = True
+                #         break
+                # except socket.error:
+                #     pass
+                # except Exception as e:
+                #     print('error: caught {} trying to read data from socket; closing'.format(repr(e)))
+                #     self._stopped = True
+                #     break
+                # finally:
+                #     self._socket.settimeout(timeout)
 
                 try:
                     thing = self._things.popleft()  # check for something to send

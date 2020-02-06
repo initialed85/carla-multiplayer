@@ -107,6 +107,8 @@ class Client(object):
     def stop(self):
         self._stopped = True
 
+        self._receiver.stop()
+
         if self._controls_applicator is not None:
             try:
                 self._controls_applicator.join()
