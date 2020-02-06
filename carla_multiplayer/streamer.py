@@ -1,3 +1,4 @@
+import datetime
 import socket
 import time
 from collections import deque
@@ -42,6 +43,7 @@ class _Client(_Looper):
         self._things: deque = deque(maxlen=2)
 
     def send(self, thing: Any):
+        print('{} - _Client.send'.format(datetime.datetime.now()))
         self._things.append(thing)
 
     def _loop(self):
@@ -77,6 +79,8 @@ class _Client(_Looper):
                     self._stopped = True
                     break
 
+                print('sent frame at {}'.format(datetime.datetime.now()))
+
         self._socket.close()
 
         self._cleanup_callback(self._uuid)
@@ -97,6 +101,8 @@ class Sender(_Looper):
             self._client_by_uuid.pop(uuid)
 
     def send(self, uuid: UUID, thing: Any):
+        print('{} - Sender.send'.format(datetime.datetime.now()))
+
         with self._client_by_uuid_lock:
             client = self._client_by_uuid.get(uuid)
             if client is None:
@@ -201,6 +207,8 @@ class Receiver(_Looper):
             if not callable(self._callback):
                 print('error: {} not callable; closing socket'.format(repr(self._callback)))
                 break
+
+            print('{} - Receiver._callback'.format(datetime.datetime.now()))
 
             self._callback(_SEPARATOR.join(data.split(_SEPARATOR)[0:-1]))
 
