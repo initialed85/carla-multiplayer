@@ -43,36 +43,31 @@ class _Client(_Looper):
         self._things: Queue = Queue(maxsize=1024)
 
     def send(self, thing: Any):
-        print('{} - _Client.send - called'.format(datetime.datetime.now()))
         self._things.put(thing)
-        print('{} - _Client.send - returning'.format(datetime.datetime.now()))
 
     def _loop(self):
         while not self._stopped:
             while not self._stopped:
-                print('{} - _Client._loop - top'.format(datetime.datetime.now()))
-
-                # timeout = self._socket.gettimeout()
-                # try:
-                #     self._socket.settimeout(0)
-                #     data = self._socket.recv(1024).decode('utf-8')
-                #     if 'stop' in data:
-                #         print('info: shutdown at remote request')
-                #         self._stopped = True
-                #         break
-                # except socket.error:
-                #     pass
-                # except Exception as e:
-                #     print('error: caught {} trying to read data from socket; closing'.format(repr(e)))
-                #     self._stopped = True
-                #     break
-                # finally:
-                #     self._socket.settimeout(timeout)
+                timeout = self._socket.gettimeout()
+                try:
+                    self._socket.settimeout(0)
+                    data = self._socket.recv(1024).decode('utf-8')
+                    if 'stop' in data:
+                        print('info: shutdown at remote request')
+                        self._stopped = True
+                        break
+                except socket.error:
+                    pass
+                except Exception as e:
+                    print('error: caught {} trying to read data from socket; closing'.format(repr(e)))
+                    self._stopped = True
+                    break
+                finally:
+                    self._socket.settimeout(timeout)
 
                 try:
                     thing = self._things.get(timeout=1)  # check for something to send
                 except Empty:
-                    print('{} - _Client._loop - nothing'.format(datetime.datetime.now()))
                     continue
 
                 try:
@@ -81,8 +76,6 @@ class _Client(_Looper):
                     print('error: caught {} trying to write data to socket; closing'.format(repr(e)))
                     self._stopped = True
                     break
-
-                print('{} - _Client._loop - bottom'.format(datetime.datetime.now()))
 
         self._socket.close()
 
@@ -104,16 +97,12 @@ class Sender(_Looper):
             self._client_by_uuid.pop(uuid)
 
     def send(self, uuid: UUID, thing: Any):
-        print('{} - Sender.send - called'.format(datetime.datetime.now()))
-
         with self._client_by_uuid_lock:
             client = self._client_by_uuid.get(uuid)
             if client is None:
                 raise ValueError('uuid {} not known'.format(repr(uuid)))
 
         client.send(thing)
-
-        print('{} - Sender.send - returning'.format(datetime.datetime.now()))
 
     def _loop(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -189,9 +178,12 @@ class Receiver(_Looper):
 
     def _call(self):
         while not self._stopped:
+            print('{} - Receiver._call - top'.format(datetime.datetime.now()))
+
             try:
                 thing = self._things.get(timeout=1)
             except Empty:
+                print('{} - Receiver._call - empty'.format(datetime.datetime.now()))
                 continue
 
             if not callable(self._callback):
@@ -199,6 +191,8 @@ class Receiver(_Looper):
                 return
 
             self._callback(_SEPARATOR.join(thing.split(_SEPARATOR)[0:-1]))
+
+            print('{} - Receiver._call - bottom'.format(datetime.datetime.now()))
 
     def _loop(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -212,6 +206,8 @@ class Receiver(_Looper):
         self._caller.start()
 
         while not self._stopped:
+            print('{} - Receiver._loop - top'.format(datetime.datetime.now()))
+
             thing = b''
             while not thing.endswith(_SEPARATOR):
                 try:
@@ -223,9 +219,9 @@ class Receiver(_Looper):
                     self._stopped = True
                     break
 
-            print('{} - Receiver._things._put'.format(datetime.datetime.now()))
-
             self._things.put(thing)
+
+            print('{} - Receiver._loop - bottom'.format(datetime.datetime.now()))
 
         self._caller.join()
 
