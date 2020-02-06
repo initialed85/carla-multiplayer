@@ -7,6 +7,7 @@ import Pyro4
 from PIL import Image
 
 from .sensor import Sensor
+from .streamer import Sender
 from .vehicle import Vehicle
 
 try:
@@ -24,7 +25,8 @@ Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
 
 @Pyro4.expose
 class Player(object):
-    def __init__(self, client: carla.Client, uuid: UUID, transforms: List[carla.Transform], blueprint_name: str):
+    def __init__(self, sender: Sender, client: carla.Client, uuid: UUID, transforms: List[carla.Transform], blueprint_name: str):
+        self._sender: Sender = sender
         self._client: carla.Client = client
         self._uuid: UUID = uuid
         self._transforms: carla.Transform = transforms
@@ -43,7 +45,10 @@ class Player(object):
         _ = carla_image
         _ = pil_image
 
-        self._frame = data
+        try:
+            self._sender.send(self._uuid, data)
+        except ValueError:
+            pass
 
     def start(self):
         for transform in cycle(self._transforms):
@@ -63,9 +68,6 @@ class Player(object):
         self._sensor = Sensor(self._client, self._vehicle.get_actor_id(), self._callback)
 
         self._sensor.start()
-
-    def get_frame(self) -> Optional[bytes]:
-        return self._frame
 
     def get_transform(self):
         return self._vehicle.get_transform()
@@ -95,6 +97,7 @@ class Server(object):
         self._client: carla.Client = client
         self._transforms: List[carla.Transform] = transforms
 
+        self._sender: Optional[Sender] = None
         self._players_by_uuid: Dict[UUID, Player] = {}
 
         self._stopped: bool = False
@@ -102,10 +105,14 @@ class Server(object):
     def start(self):
         self._stopped = False
 
+        self._sender = Sender()
+        self._sender.start()
+
     def register_player(self, blueprint_name) -> UUID:
         uuid = uuid4()
 
         player = Player(
+            sender=self._sender,
             client=self._client,
             uuid=uuid,
             transforms=self._transforms,
@@ -146,6 +153,10 @@ class Server(object):
 
     def stop(self):
         self._stopped = True
+
+        if self._sender is not None:
+            self._sender.stop()
+            self._sender = None
 
         for player in self.get_players():
             self.unregister_player(player.uuid)

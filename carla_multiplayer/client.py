@@ -11,6 +11,7 @@ from .controller_gamepad import GamepadController, ControllerState
 from .controller_keyboard_and_mouse import KeyboardAndMouseController
 from .screen import Screen
 from .server import Server, Player
+from .streamer import Receiver
 
 _CONTROLLER_INDEX = 0
 _WIDTH = 1280
@@ -37,10 +38,10 @@ class Client(object):
         self._server: Optional[Server] = None
         self._uuid: Optional[UUID] = None
         self._player: Optional[Player] = None
+        self._receiver: Optional[Receiver] = None
 
         self._controller_state: Optional[ControllerState] = None
 
-        self._frame_getter: Optional[Thread] = None
         self._controls_applicator: Optional[Thread] = None
 
         self._stopped: bool = False
@@ -53,22 +54,6 @@ class Client(object):
             return
 
         time.sleep((target - now).total_seconds())
-
-    def _get_frames(self):
-        iteration = datetime.timedelta(seconds=1.0 / (float(_FPS)))
-
-        while not self._stopped:
-            started = datetime.datetime.now()
-            if self._player is None:
-                self._sleep(started, iteration)
-
-                continue
-
-            frame = self._player.get_frame()
-
-            self._screen.handle_image(frame)
-
-            self._sleep(started, iteration)
 
     def _apply_controls(self):
         iteration = datetime.timedelta(seconds=1.0 / (float(_CONTROL_RATE)))
@@ -100,15 +85,15 @@ class Client(object):
     def start(self):
         self._stopped = False
 
-        self._frame_getter = Thread(target=self._get_frames)
-        self._frame_getter.start()
-
         self._controls_applicator = Thread(target=self._apply_controls)
         self._controls_applicator.start()
 
         self._server = Pyro4.Proxy('PYRO:carla_multiplayer@{}:13337'.format(self._host))
         self._uuid = self._server.register_player(self._blueprint_name)
         self._player = self._server.get_proxy_player(self._uuid)
+
+        self._receiver = Receiver(self._screen.handle_image, self._uuid, self._host)
+        self._receiver.start()
 
     def handle_event(self, event: pygame.event.EventType):
         self._controller.handle_event(event)
@@ -122,17 +107,13 @@ class Client(object):
     def stop(self):
         self._stopped = True
 
-        if self._frame_getter is not None:
-            try:
-                self._frame_getter.join()
-            except RuntimeError:
-                pass
-
         if self._controls_applicator is not None:
             try:
                 self._controls_applicator.join()
             except RuntimeError:
                 pass
+
+            self._controls_applicator = None
 
         if self._uuid is not None and self._server is not None:
             self._server.unregister_player(self._uuid)

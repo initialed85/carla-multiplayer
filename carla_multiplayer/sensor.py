@@ -142,6 +142,8 @@ class Sensor(object):
             except RuntimeError:
                 pass
 
+            self._image_handler = None
+
         if self._sensor is not None:
             self._sensor.destroy()
             self._sensor = None

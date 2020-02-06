@@ -141,6 +141,8 @@ class Vehicle(object):
             except RuntimeError:
                 pass
 
+            self._control_expirer = None
+
         if self._actor is not None:
             self._actor.destroy()
             self._actor = None
