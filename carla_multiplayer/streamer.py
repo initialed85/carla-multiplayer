@@ -1,7 +1,7 @@
 import datetime
 import socket
 import time
-from collections import deque
+from queue import Queue, Empty
 from threading import Thread, RLock
 from typing import Optional, Tuple, Dict, List, Any, Callable
 from uuid import UUID
@@ -40,11 +40,11 @@ class _Client(_Looper):
         self._uuid: uuid = uuid
         self._cleanup_callback: Callable = cleanup_callback
 
-        self._things: deque = deque(maxlen=2)
+        self._things: Queue = Queue(maxsize=1024)
 
     def send(self, thing: Any):
         print('{} - _Client.send - called'.format(datetime.datetime.now()))
-        self._things.append(thing)
+        self._things.put(thing)
         print('{} - _Client.send - returning'.format(datetime.datetime.now()))
 
     def _loop(self):
@@ -70,10 +70,9 @@ class _Client(_Looper):
                 #     self._socket.settimeout(timeout)
 
                 try:
-                    thing = self._things.popleft()  # check for something to send
+                    thing = self._things.get(timeout=1)  # check for something to send
                 except IndexError:
                     print('{} - _Client._loop - nothing'.format(datetime.datetime.now()))
-                    time.sleep(0.001)
                     continue
 
                 try:
@@ -129,8 +128,6 @@ class Sender(_Looper):
                 client_socket, client_address = self._socket.accept()
                 client_socket.settimeout(1)
             except socket.error:
-                time.sleep(0.1)
-
                 continue
 
             try:
@@ -185,8 +182,23 @@ class Receiver(_Looper):
         self._port: int = port
 
         self._socket: Optional[socket.socket] = None
+        self._things: Queue = Queue(maxsize=1024)
+        self._caller: Optional[Thread] = None
 
         self._stopped: bool = False
+
+    def _call(self):
+        while not self._stopped:
+            try:
+                thing = self._things.get(timeout=1)
+            except Empty:
+                continue
+
+            if not callable(self._callback):
+                print('error: {} not callable; closing socket'.format(repr(self._callback)))
+                return
+
+            self._callback(_SEPARATOR.join(thing.split(_SEPARATOR)[0:-1]))
 
     def _loop(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -196,11 +208,13 @@ class Receiver(_Looper):
         self._socket.settimeout(1)
         self._socket.send('{}\n'.format(str(self._uuid)).encode('utf-8'))
 
+        self._caller = Thread()
+
         while not self._stopped:
-            data = b''
-            while not data.endswith(_SEPARATOR):
+            thing = b''
+            while not thing.endswith(_SEPARATOR):
                 try:
-                    data += self._socket.recv(1)
+                    thing += self._socket.recv(1)
                 except socket.timeout:
                     continue
                 except Exception as e:
@@ -208,13 +222,9 @@ class Receiver(_Looper):
                     self._stopped = True
                     break
 
-            if not callable(self._callback):
-                print('error: {} not callable; closing socket'.format(repr(self._callback)))
-                break
-
-            print('{} - Receiver._callback'.format(datetime.datetime.now()))
-
-            self._callback(_SEPARATOR.join(data.split(_SEPARATOR)[0:-1]))
+            print('{} - Receiver._things._put'.format(datetime.datetime.now()))
+            
+            self._things.put(thing)
 
         self._socket.send('stop\n'.encode('utf-8'))
         self._socket.close()
@@ -234,13 +244,13 @@ if __name__ == '__main__':
     except IndexError:
         raise SystemExit('error: first argument must be "sender" or "receiver"')
 
-    is_sender = mode.strip().lower()[0] == 's'
+    _is_sender = mode.strip().lower()[0] == 's'
 
-    thing = Sender() if is_sender else Receiver(_callback, UUID('e66ae528-b01d-435a-8109-2092e04b2532'), 'localhost')
+    _sender_or_receiver = Sender() if _is_sender else Receiver(_callback, UUID('e66ae528-b01d-435a-8109-2092e04b2532'), 'localhost')
 
-    thing.start()
+    _sender_or_receiver.start()
 
-    if is_sender:
+    if _is_sender:
         code.interact(local=locals())
     else:
         while 1:
@@ -249,4 +259,4 @@ if __name__ == '__main__':
             except KeyboardInterrupt:
                 break
 
-    thing.stop()
+    _sender_or_receiver.stop()
