@@ -39,7 +39,7 @@ class _Client(_Looper):
         self._uuid: uuid = uuid
         self._cleanup_callback: Callable = cleanup_callback
 
-        self._things: deque = deque(maxlen=1024)
+        self._things: deque = deque(maxlen=2)
 
     def send(self, thing: Any):
         self._things.append(thing)
@@ -185,27 +185,24 @@ class Receiver(_Looper):
         self._socket.send('{}\n'.format(str(self._uuid)).encode('utf-8'))
 
         while not self._stopped:
-            try:
-                datas = self._socket.recv(65536).rstrip(_SEPARATOR)
-            except socket.timeout:
-                time.sleep(0.1)
+            data = b''
+            while not data.endswith(_SEPARATOR):
+                try:
+                    data += self._socket.recv(1)
+                except socket.timeout:
+                    time.sleep(0.1)
 
-                continue
-            except Exception as e:
-                print('error: caught {} trying to read data from socket; closing socket'.format(repr(e)))
-                break
-
-            if len(datas) == 0:
-                time.sleep(0.1)
-
-                continue
+                    continue
+                except Exception as e:
+                    print('error: caught {} trying to read data from socket; closing socket'.format(repr(e)))
+                    self._stopped = True
+                    break
 
             if not callable(self._callback):
                 print('error: {} not callable; closing socket'.format(repr(self._callback)))
                 break
 
-            for data in datas.split(_SEPARATOR):
-                self._callback(data)
+            self._callback(_SEPARATOR.join(data.split(_SEPARATOR)[0:-1]))
 
         self._socket.send('stop\n'.encode('utf-8'))
         self._socket.close()

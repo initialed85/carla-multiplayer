@@ -1,3 +1,4 @@
+import traceback
 from io import BytesIO
 from typing import Tuple, Optional
 
@@ -24,15 +25,18 @@ class Screen(object):
         if data is None:
             return
 
-        print(repr(data))
+        try:
+            buffer = BytesIO()
+            buffer.write(data)
+            pil_image = Image.open(buffer)
+            if pil_image.size != self._dimensions:
+                pil_image = pil_image.resize(self._dimensions)
 
-        buffer = BytesIO()
-        buffer.write(data)
-        pil_image = Image.open(buffer)
-        if pil_image.size != self._dimensions:
-            pil_image = pil_image.resize(self._dimensions)
-
-        self._image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
+            self._image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
+        except Exception as e:
+            print('caught {} trying to decode frame; data and traceback follows'.format(repr(e)))
+            print(repr(data))
+            traceback.print_exc()
 
     def update(self):
         if self._image is None:
