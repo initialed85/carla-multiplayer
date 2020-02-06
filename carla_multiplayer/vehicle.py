@@ -1,6 +1,5 @@
 import datetime
 import time
-from threading import Thread
 from typing import Optional, NamedTuple
 
 try:
@@ -44,26 +43,10 @@ class Vehicle(object):
         self._actor: Optional[carla.Actor] = None
 
         self._last_control_timestamp: Optional[datetime.datetime] = None
-        self._control_expirer: Optional[Thread] = None
 
         self._last_reset: Optional[datetime.datetime] = None
 
         self._stopped: bool = False
-
-    def _expire_control(self):
-        while not self._stopped:
-            if self._actor is None:
-                time.sleep(0.1)
-
-                continue
-
-            if self._last_control_timestamp is not None:
-                if datetime.datetime.now() - self._last_control_timestamp < datetime.timedelta(seconds=1):
-                    time.sleep(0.1)
-
-                    continue
-
-            self._actor.apply_control(carla.VehicleControl(brake=1.0, hand_brake=True))
 
     def apply_control(self, throttle: float, steer: float, brake: float, hand_brake: bool, reverse: bool, reset: bool):
         if self._actor is None:
@@ -129,19 +112,8 @@ class Vehicle(object):
         self._actor = self._world.spawn_actor(vehicle_blueprint, self._transform)
         self._world.wait_for_tick()
 
-        self._control_expirer = Thread(target=self._expire_control)
-        # self._control_expirer.start()
-
     def stop(self):
         self._stopped = True
-
-        if self._control_expirer is not None:
-            try:
-                self._control_expirer.join()
-            except RuntimeError:
-                pass
-
-            self._control_expirer = None
 
         if self._actor is not None:
             self._actor.destroy()

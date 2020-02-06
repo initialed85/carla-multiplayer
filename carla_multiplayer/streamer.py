@@ -1,4 +1,3 @@
-import datetime
 import socket
 import time
 from queue import Queue, Empty
@@ -40,7 +39,7 @@ class _Client(_Looper):
         self._uuid: uuid = uuid
         self._cleanup_callback: Callable = cleanup_callback
 
-        self._things: Queue = Queue(maxsize=1024)
+        self._things: Queue = Queue(maxsize=2)
 
     def send(self, thing: Any):
         self._things.put(thing)
@@ -171,19 +170,16 @@ class Receiver(_Looper):
         self._port: int = port
 
         self._socket: Optional[socket.socket] = None
-        self._things: Queue = Queue(maxsize=1024)
+        self._things: Queue = Queue(maxsize=2)
         self._caller: Optional[Thread] = None
 
         self._stopped: bool = False
 
     def _call(self):
         while not self._stopped:
-            print('{} - Receiver._call - top'.format(datetime.datetime.now()))
-
             try:
                 thing = self._things.get(timeout=1)
             except Empty:
-                print('{} - Receiver._call - empty'.format(datetime.datetime.now()))
                 continue
 
             if not callable(self._callback):
@@ -191,8 +187,6 @@ class Receiver(_Looper):
                 return
 
             self._callback(_SEPARATOR.join(thing.split(_SEPARATOR)[0:-1]))
-
-            print('{} - Receiver._call - bottom'.format(datetime.datetime.now()))
 
     def _loop(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -206,8 +200,6 @@ class Receiver(_Looper):
         self._caller.start()
 
         while not self._stopped:
-            print('{} - Receiver._loop - top'.format(datetime.datetime.now()))
-
             thing = b''
             while not thing.endswith(_SEPARATOR):
                 try:
@@ -220,8 +212,6 @@ class Receiver(_Looper):
                     break
 
             self._things.put(thing)
-
-            print('{} - Receiver._loop - bottom'.format(datetime.datetime.now()))
 
         self._caller.join()
 
