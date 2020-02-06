@@ -74,9 +74,8 @@ class UDPReceiver(_Receiver):
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
         self._socket.settimeout(5)
         self._socket.bind(('', self._port + 1))
-        self._socket.connect((self._host, self._port))
         self._socket.settimeout(1)
-        self._socket.send('{}\n'.format(str(self._uuid)).encode('utf-8'))
+        self._socket.sendto('{}\n'.format(str(self._uuid)).encode('utf-8'), (self._host, self._port))
 
         self._caller = Thread(target=self._call)
         self._caller.start()
