@@ -6,8 +6,6 @@ from uuid import UUID
 
 from .streamer import _Client, _Sender, _Receiver
 
-_SEPARATOR = b'__what_are_the_chances_these_characters_occur_naturally__'
-
 
 class UDPSender(_Sender):
     def _loop(self):
@@ -81,16 +79,14 @@ class UDPReceiver(_Receiver):
         self._caller.start()
 
         while not self._stopped:
-            thing = b''
-            while not thing.endswith(_SEPARATOR):
-                try:
-                    thing += self._socket.recv(65536)
-                except socket.timeout:
-                    continue
-                except Exception as e:
-                    print('error: caught {} trying to read data from socket; closing socket'.format(repr(e)))
-                    self._stopped = True
-                    break
+            try:
+                thing = self._socket.recv(65536)
+            except socket.timeout:
+                continue
+            except Exception as e:
+                print('error: caught {} trying to read data from socket; closing socket'.format(repr(e)))
+                self._stopped = True
+                break
 
             self._things.put(thing)
 

@@ -4,9 +4,7 @@ from threading import Thread
 from typing import List
 from uuid import UUID
 
-from .streamer import _Client, _Sender, _Receiver
-
-_SEPARATOR = b'__what_are_the_chances_these_characters_occur_naturally__'
+from .streamer import _Client, _Sender, _Receiver, _SEPARATOR
 
 
 class TCPSender(_Sender):
