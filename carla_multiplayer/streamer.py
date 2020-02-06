@@ -43,12 +43,15 @@ class _Client(_Looper):
         self._things: deque = deque(maxlen=2)
 
     def send(self, thing: Any):
-        print('{} - _Client.send'.format(datetime.datetime.now()))
+        print('{} - _Client.send - called'.format(datetime.datetime.now()))
         self._things.append(thing)
+        print('{} - _Client.send - returning'.format(datetime.datetime.now()))
 
     def _loop(self):
         while not self._stopped:
             while not self._stopped:
+                print('{} - _Client._loop - top'.format(datetime.datetime.now()))
+
                 # timeout = self._socket.gettimeout()
                 # try:
                 #     self._socket.settimeout(0)
@@ -69,6 +72,7 @@ class _Client(_Looper):
                 try:
                     thing = self._things.popleft()  # check for something to send
                 except IndexError:
+                    print('{} - _Client._loop - nothing'.format(datetime.datetime.now()))
                     time.sleep(0.001)
                     continue
 
@@ -79,7 +83,7 @@ class _Client(_Looper):
                     self._stopped = True
                     break
 
-                print('sent frame at {}'.format(datetime.datetime.now()))
+                print('{} - _Client._loop - bottom'.format(datetime.datetime.now()))
 
         self._socket.close()
 
@@ -101,7 +105,7 @@ class Sender(_Looper):
             self._client_by_uuid.pop(uuid)
 
     def send(self, uuid: UUID, thing: Any):
-        print('{} - Sender.send'.format(datetime.datetime.now()))
+        print('{} - Sender.send - called'.format(datetime.datetime.now()))
 
         with self._client_by_uuid_lock:
             client = self._client_by_uuid.get(uuid)
@@ -109,6 +113,8 @@ class Sender(_Looper):
                 raise ValueError('uuid {} not known'.format(repr(uuid)))
 
         client.send(thing)
+
+        print('{} - Sender.send - returning'.format(datetime.datetime.now()))
 
     def _loop(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
