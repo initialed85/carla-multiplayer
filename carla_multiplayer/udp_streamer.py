@@ -85,10 +85,8 @@ class UDPReceiver(_Receiver):
             thing = b''
             while not thing.endswith(_SEPARATOR):
                 try:
-                    thing += self._socket.recv(1024)
-                    print(repr(thing))
+                    thing += self._socket.recv(1)
                 except socket.timeout:
-                    print('timeout')
                     continue
                 except Exception as e:
                     print('error: caught {} trying to read data from socket; closing socket'.format(repr(e)))
