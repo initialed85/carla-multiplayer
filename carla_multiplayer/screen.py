@@ -24,6 +24,8 @@ class Screen(object):
         if data is None:
             return
 
+        print(repr(data))
+
         buffer = BytesIO()
         buffer.write(data)
         pil_image = Image.open(buffer)

@@ -108,6 +108,7 @@ class Sender(_Looper):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.settimeout(1)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
         self._socket.bind(('', self._port))
         self._socket.listen(1)
 
@@ -177,6 +178,7 @@ class Receiver(_Looper):
 
     def _loop(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
         self._socket.settimeout(5)
         self._socket.connect((self._host, self._port))
         self._socket.settimeout(1)
