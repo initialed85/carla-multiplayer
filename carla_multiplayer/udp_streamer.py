@@ -84,7 +84,7 @@ class UDPReceiver(_Receiver):
             thing = b''
             while not thing.endswith(_SEPARATOR):
                 try:
-                    thing += self._socket.recv(1)
+                    thing += self._socket.recv(65536)
                 except socket.timeout:
                     continue
                 except Exception as e:
