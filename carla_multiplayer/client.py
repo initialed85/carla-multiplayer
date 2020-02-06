@@ -15,7 +15,7 @@ from .server import Server, Player
 _CONTROLLER_INDEX = 0
 _WIDTH = 1280
 _HEIGHT = 720
-_FPS = 15
+_FPS = 20
 _CONTROL_RATE = 5
 
 Pyro4.config.SERIALIZER = 'pickle'
