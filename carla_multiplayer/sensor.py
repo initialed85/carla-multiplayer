@@ -1,6 +1,6 @@
 import time
-from collections import deque
 from io import BytesIO
+from queue import Queue, Empty
 from threading import Thread
 from typing import Optional, Callable
 
@@ -64,12 +64,12 @@ class Sensor(object):
         self._actor: Optional[carla.Actor] = None
         self._sensor: Optional[carla.Sensor] = None
 
-        self._images = deque(maxlen=2)
+        self._images: Queue = Queue(maxsize=2)
         self._image_handler: Optional[Thread] = None
 
         self._stopped: bool = False
 
-    def _handle_image_from_deque(self, image: carla.Image):
+    def _handle_image_from_queue(self, image: carla.Image):
         rgb_array = to_rgb_array(image)
         pil_image = Image.fromarray(rgb_array)
         buffer = BytesIO()
@@ -82,22 +82,20 @@ class Sensor(object):
             data=data,
         )
 
-    def _handle_images_from_deque(self):
+    def _handle_images_from_queue(self):
         while not self._stopped:
             try:
-                image: carla.Image = self._images.popleft()
-            except IndexError:
-                time.sleep(0.1)
-
+                image: carla.Image = self._images.get(timeout=1)
+            except Empty:
                 continue
 
-            self._handle_image_from_deque(image)
+            self._handle_image_from_queue(image)
 
     def _handle_image_from_sensor(self, image: carla.Image):
         if image is None:
             return
 
-        self._images.append(image)
+        self._images.put(image)
 
     def start(self):
         self._stopped = False
@@ -127,7 +125,7 @@ class Sensor(object):
         )
         self._world.wait_for_tick()
 
-        self._image_handler = Thread(target=self._handle_images_from_deque)
+        self._image_handler = Thread(target=self._handle_images_from_queue)
         self._image_handler.start()
 
         self._sensor.listen(self._handle_image_from_sensor)
