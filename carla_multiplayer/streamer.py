@@ -69,7 +69,7 @@ class _Client(_Looper):
                 try:
                     thing = self._things.popleft()  # check for something to send
                 except IndexError:
-                    time.sleep(0.1)
+                    time.sleep(0.001)
                     continue
 
                 try:
@@ -196,8 +196,6 @@ class Receiver(_Looper):
                 try:
                     data += self._socket.recv(1)
                 except socket.timeout:
-                    time.sleep(0.1)
-
                     continue
                 except Exception as e:
                     print('error: caught {} trying to read data from socket; closing socket'.format(repr(e)))
