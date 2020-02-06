@@ -71,7 +71,7 @@ class _Client(_Looper):
 
                 try:
                     thing = self._things.get(timeout=1)  # check for something to send
-                except IndexError:
+                except Empty:
                     print('{} - _Client._loop - nothing'.format(datetime.datetime.now()))
                     continue
 
@@ -208,7 +208,8 @@ class Receiver(_Looper):
         self._socket.settimeout(1)
         self._socket.send('{}\n'.format(str(self._uuid)).encode('utf-8'))
 
-        self._caller = Thread()
+        self._caller = Thread(target=self._call)
+        self._caller.start()
 
         while not self._stopped:
             thing = b''
@@ -223,8 +224,10 @@ class Receiver(_Looper):
                     break
 
             print('{} - Receiver._things._put'.format(datetime.datetime.now()))
-            
+
             self._things.put(thing)
+
+        self._caller.join()
 
         self._socket.send('stop\n'.encode('utf-8'))
         self._socket.close()
