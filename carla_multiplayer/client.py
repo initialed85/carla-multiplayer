@@ -11,7 +11,8 @@ from .controller_gamepad import GamepadController, ControllerState
 from .controller_keyboard_and_mouse import KeyboardAndMouseController
 from .screen import Screen
 from .server import Server, Player
-from .streamer import Receiver
+from .tcp_streamer import TCPReceiver
+from .udp_streamer import UDPReceiver
 
 _CONTROLLER_INDEX = 0
 _WIDTH = 1280
@@ -38,7 +39,12 @@ class Client(object):
         self._server: Optional[Server] = None
         self._uuid: Optional[UUID] = None
         self._player: Optional[Player] = None
-        self._receiver: Optional[Receiver] = None
+
+        _ = TCPReceiver
+        _ = UDPReceiver
+
+        # self._receiver: Optional[TCPReceiver] = None
+        self._receiver: Optional[UDPReceiver] = None
 
         self._controller_state: Optional[ControllerState] = None
 
@@ -92,7 +98,8 @@ class Client(object):
         self._uuid = self._server.register_player(self._blueprint_name)
         self._player = self._server.get_proxy_player(self._uuid)
 
-        self._receiver = Receiver(self._screen.handle_image, self._uuid, self._host)
+        # self._receiver = TCPReceiver(self._screen.handle_image, self._uuid, self._host)
+        self._receiver = UDPReceiver(self._screen.handle_image, self._uuid, self._host)
         self._receiver.start()
 
     def handle_event(self, event: pygame.event.EventType):

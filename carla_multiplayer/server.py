@@ -1,13 +1,14 @@
 import time
 from itertools import cycle
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from uuid import uuid4, UUID
 
 import Pyro4
 from PIL import Image
 
 from .sensor import Sensor
-from .streamer import Sender
+from .tcp_streamer import TCPSender
+from .udp_streamer import UDPSender
 from .vehicle import Vehicle
 
 try:
@@ -25,8 +26,9 @@ Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
 
 @Pyro4.expose
 class Player(object):
-    def __init__(self, sender: Sender, client: carla.Client, uuid: UUID, transforms: List[carla.Transform], blueprint_name: str):
-        self._sender: Sender = sender
+    def __init__(self, sender: Union[TCPSender, UDPSender], client: carla.Client, uuid: UUID, transforms: List[carla.Transform],
+            blueprint_name: str):
+        self._sender: TCPSender = sender
         self._client: carla.Client = client
         self._uuid: UUID = uuid
         self._transforms: carla.Transform = transforms
@@ -97,7 +99,8 @@ class Server(object):
         self._client: carla.Client = client
         self._transforms: List[carla.Transform] = transforms
 
-        self._sender: Optional[Sender] = None
+        # self._sender: Optional[TCPSender] = None
+        self._sender: Optional[UDPSender] = None
         self._players_by_uuid: Dict[UUID, Player] = {}
 
         self._stopped: bool = False
@@ -105,7 +108,11 @@ class Server(object):
     def start(self):
         self._stopped = False
 
-        self._sender = Sender()
+        _ = TCPSender
+        _ = UDPSender
+
+        # self._sender = TCPSender()
+        self._sender = UDPSender()
         self._sender.start()
 
     def register_player(self, blueprint_name) -> UUID:
