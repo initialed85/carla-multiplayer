@@ -123,3 +123,39 @@ class Server(object):
 
         self._vehicle.stop()
         self._receiver.stop()
+
+
+def run_server(vehicle_port: int,
+        sensor_port: int,
+        vehicle_blueprint_name: str,
+        client_host: str,
+        vehicle_transforms: Optional[List[carla.Transform]] = None,
+        sensor_blueprint_name: str = _SENSOR_BLUEPRINT_NAME,
+        sensor_transform: carla.Transform = _SENSOR_TRANSFORM,
+        carla_host: str = _CARLA_HOST,
+        carla_port: int = _CARLA_PORT,
+        carla_timeout: int = _CARLA_TIMEOUT,
+        queue_depth: int = _QUEUE_DEPTH):
+    server = Server(
+        vehicle_port=vehicle_port,
+        sensor_port=sensor_port,
+        vehicle_blueprint_name=vehicle_blueprint_name,
+        client_host=client_host,
+        vehicle_transforms=vehicle_transforms,
+        sensor_blueprint_name=sensor_blueprint_name,
+        sensor_transform=sensor_transform,
+        carla_host=carla_host,
+        carla_port=carla_port,
+        carla_timeout=carla_timeout,
+        queue_depth=queue_depth
+    )
+
+    server.start()
+    server.run()
+    server.stop()
+
+
+if __name__ == '__main__':
+    import sys
+
+    run_server(int(sys.argv[1]), int(sys.argv[1]), sys.argv[2], sys.argv[3])
