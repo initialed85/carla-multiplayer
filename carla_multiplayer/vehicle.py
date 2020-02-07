@@ -142,3 +142,5 @@ if __name__ == '__main__':
         traceback.print_exc()
 
     print('shutting down')
+
+    delete_vehicle(_client, _actor_id)
