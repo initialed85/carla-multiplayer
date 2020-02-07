@@ -181,7 +181,6 @@ class GamepadController(TimedLooper):
         self._controller_state: Optional[ControllerState] = None
 
     def _set_controller_state(self, controller_state: Optional[ControllerState]):
-        print(controller_state)
         self._controller_state = controller_state
 
     def _work(self):

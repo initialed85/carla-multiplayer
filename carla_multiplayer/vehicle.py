@@ -104,10 +104,8 @@ class Vehicle(TimedLooper):
                 transform.location.z += 5
                 transform.rotation.roll = 0
                 transform.rotation.pitch = 0
-                self._vehicle.apply_transform(transform)
+                self._vehicle.set_transform(transform)
                 self._last_reset = now
-
-        print(self._controller_state)
 
         self._vehicle.apply_control(
             carla.VehicleControl(
