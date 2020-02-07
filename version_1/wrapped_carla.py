@@ -1,6 +1,5 @@
 import os
 import sys
-import traceback
 
 sys.path.append('{}/carla-0.9.6-py3.6-linux-x86_64.egg'.format(
     os.path.dirname(os.path.realpath(__file__)))
@@ -8,9 +7,8 @@ sys.path.append('{}/carla-0.9.6-py3.6-linux-x86_64.egg'.format(
 
 try:
     from carla import *
-except ImportError:  # hack for platforms that don't support or don't have Carla
-    print('failed to import carla; traceback follows, objects are mocked')
-    traceback.print_exc()
+except ImportError as e:  # hack for platforms that don't support or don't have Carla
+    print('warning: failed to import carla because {}; objects are mocked'.format(repr(e)))
 
     from mock import MagicMock
 
