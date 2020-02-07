@@ -53,8 +53,6 @@ class Server(object):
         self._client: carla.Client = carla.Client(self._carla_host, self._carla_port)
         self._client.set_timeout(self._carla_timeout)
 
-        self._receiver.set_callback(self._vehicle.recv)
-
         self._stopped = False
 
     def start(self):
@@ -96,6 +94,8 @@ class Server(object):
 
         self._vehicle = Vehicle(self._receiver, self._client, self._vehicle_actor.id)
         self._sensor = Sensor(self._client, self._sensor_actor.id, self._queue_depth, self._sender, self._client_host, self._sensor_port)
+
+        self._receiver.set_callback(self._vehicle.recv)
 
         self._receiver.start()
         self._vehicle.start()
