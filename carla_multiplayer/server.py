@@ -53,6 +53,8 @@ class Server(object):
         self._client: carla.Client = carla.Client(self._carla_host, self._carla_port)
         self._client.set_timeout(self._carla_timeout)
 
+        self._receiver.set_callback(self._vehicle.recv)
+
         self._stopped = False
 
     def start(self):

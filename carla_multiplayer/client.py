@@ -14,8 +14,8 @@ _FPS = 24
 class Client(object):
     def __init__(self,
             host: str,
-            controller_port: int ,
-            screen_port: int ,
+            controller_port: int,
+            screen_port: int,
             controller_index: int = _CONTROLLER_INDEX,
             width: int = _WIDTH,
             height: int = _HEIGHT,
