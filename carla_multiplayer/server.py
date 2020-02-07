@@ -158,4 +158,4 @@ def run_server(vehicle_port: int,
 if __name__ == '__main__':
     import sys
 
-    run_server(int(sys.argv[1]), int(sys.argv[1]), sys.argv[2], sys.argv[3])
+    run_server(int(sys.argv[1]), int(sys.argv[2]), sys.argv[3], sys.argv[4])
