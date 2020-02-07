@@ -6,7 +6,9 @@ from PIL import Image
 
 from .udp import Receiver, Datagram
 
-_FPS = 30
+_FPS = 24
+_WIDTH = 1280
+_HEIGHT = 720
 
 
 def _convert_webp_bytes_to_pygame_image(data: bytes, dimensions):
@@ -53,7 +55,7 @@ if __name__ == '__main__':
 
     _receiver = Receiver(int(sys.argv[1]), 8)
 
-    _screen = Screen(1280, 720, _receiver)
+    _screen = Screen(_WIDTH, _HEIGHT, _receiver)
 
     _receiver.set_callback(_screen.handle_webp_bytes)
     _receiver.start()

@@ -125,7 +125,7 @@ class Vehicle(TimedLooper):
         self._last_controller_state_received = datetime.datetime.now()
 
     def recv(self, datagram: Datagram):
-        _, controller_state = deserialize_controller_state(datagram.data)
+        controller_state = deserialize_controller_state(datagram.data)
 
         self._apply_control(controller_state)
 

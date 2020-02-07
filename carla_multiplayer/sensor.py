@@ -14,7 +14,7 @@ try:  # cater for python3 -m (module) vs python3 (file)
 except ImportError:
     import wrapped_carla as carla
 
-_FPS = 30
+_FPS = 24
 _WIDTH = 640
 _HEIGHT = 360
 _SENSOR_BLUEPRINT_NAME = 'sensor.camera.rgb'

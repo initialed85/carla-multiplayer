@@ -26,17 +26,12 @@ def handle_steer_deadzone(steer) -> float:
     return steer
 
 
-def deserialize_controller_state(data: bytes) -> Tuple[int, ControllerState]:
-    data = json.loads(data.decode('utf-8'))
-
-    return data['actor_id'], ControllerState(**data['controller_state'])
+def deserialize_controller_state(data: bytes) -> ControllerState:
+    return ControllerState(**json.loads(data.decode('utf-8')))
 
 
-def serialize_controller_state(actor_id: int, controller_state: ControllerState) -> str:
-    return json.dumps({
-        'actor_id': actor_id,
-        'controller_state': controller_state._asdict()
-    }).encode('utf-8')
+def serialize_controller_state(controller_state: ControllerState) -> str:
+    return json.dumps(controller_state._asdict()).encode('utf-8')
 
 
 class RawControllerState(NamedTuple):
@@ -189,7 +184,7 @@ class GamepadController(TimedLooper):
 
         try:
             self._sender.send_datagram(
-                data=serialize_controller_state(0, self._controller_state),
+                data=serialize_controller_state(self._controller_state),
                 address=(self._host, self._port)
             )
         except Empty:
