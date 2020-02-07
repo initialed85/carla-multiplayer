@@ -121,6 +121,8 @@ class Vehicle(TimedLooper):
         if controller_state is None:
             return
 
+        print(controller_state)
+
         self._controller_state = controller_state
         self._last_controller_state_received = datetime.datetime.now()
 
