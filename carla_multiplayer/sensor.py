@@ -166,7 +166,8 @@ class Sensor(Threader):
 
 
 if __name__ == '__main__':
-    import code
+    import sys
+    import time
 
     client = carla.Client('localhost', 2000)
     client.set_timeout(2.0)
@@ -177,4 +178,17 @@ if __name__ == '__main__':
     vehicles = [x for x in world.get_actors().filter('vehicle.*')]
     sensors = [x for x in world.get_actors().filter('sensor.*')]
 
-    code.interact(local=locals())
+    sender = Sender(sys.argv[1], 8)
+    sender.start()
+
+    sensor = Sensor(client, sensors[-1].id, 16, sender, sys.argv[2], sys.argv[3])
+    sensor.start()
+
+    while 1:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            break
+
+    sensor.stop()
+    sender.stop()
