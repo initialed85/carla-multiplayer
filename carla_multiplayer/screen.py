@@ -56,6 +56,7 @@ if __name__ == '__main__':
     _receiver.set_callback(_screen.handle_webp_bytes)
     _receiver.start()
 
+    pygame.init()
     _clock = pygame.time.Clock()
 
     _stopped = False
