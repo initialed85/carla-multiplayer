@@ -168,7 +168,7 @@ class Sensor(Threader):
 if __name__ == '__main__':
     import code
 
-    client = carla.Client('', 2000)
+    client = carla.Client('localhost', 2000)
     client.set_timeout(2.0)
 
     world = client.get_world()
