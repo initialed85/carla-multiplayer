@@ -184,7 +184,7 @@ if __name__ == '__main__':
     _sender = Sender(int(sys.argv[2]), 8)
     _sender.start()
 
-    _sensor = Sensor(_client, _sensor_id, 16, _sender, sys.argv[3], int(sys.argv[3]))
+    _sensor = Sensor(_client, _sensor_id, 16, _sender, sys.argv[3], int(sys.argv[4]))
     _sensor.start()
 
     while 1:
