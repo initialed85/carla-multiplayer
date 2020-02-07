@@ -165,6 +165,7 @@ class RateLimiter(TimedLooper):
             return
 
         try:
+            print(self._value)
             self._callback(self._value)
         except Exception as e:
             print('warning: stifled {}'.format(repr(e)))

@@ -91,15 +91,12 @@ class Vehicle(TimedLooper):
         if self._last_controller_state_received is not None:
             if now - self._last_controller_state_received > self._control_expire_delta:
                 self._vehicle.apply_control(_SAFE_CONTROL)
-                print('safe')
                 return
 
         if self._controller_state is None:
-            print('no controller state')
             return
 
         if self._controller_state.reset:
-            print('reset')
             if self._last_reset is None or now - self._last_reset > self._reset_rate_delta:
                 transform = self._vehicle.get_transform()
                 transform.location.z += 5
@@ -108,7 +105,6 @@ class Vehicle(TimedLooper):
                 self._vehicle.apply_transform(transform)
                 self._last_reset = now
 
-        print('control')
         self._vehicle.apply_control(
             carla.VehicleControl(
                 throttle=self._controller_state.throttle,
