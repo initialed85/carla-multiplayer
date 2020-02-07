@@ -5,7 +5,7 @@ import Pyro4
 
 from .controller import ControllerState, deserialize_controller_state
 from .looper import TimedLooper
-from .udp import Receiver
+from .udp import Receiver, Datagram
 
 try:  # cater for python3 -m (module) vs python3 (file)
     from . import wrapped_carla as carla
@@ -124,8 +124,8 @@ class Vehicle(TimedLooper):
         self._controller_state = controller_state
         self._last_controller_state_received = datetime.datetime.now()
 
-    def recv(self, data):
-        _, controller_state = deserialize_controller_state(data)
+    def recv(self, datagram: Datagram):
+        _, controller_state = deserialize_controller_state(datagram.data)
 
         self._apply_control(controller_state)
 
@@ -135,6 +135,7 @@ if __name__ == '__main__':
     import time
 
     _receiver = Receiver(int(sys.argv[1]), 2)
+    _receiver.start()
 
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
