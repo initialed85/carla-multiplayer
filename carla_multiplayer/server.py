@@ -65,12 +65,13 @@ class Server(object):
         if self._vehicle_transforms is None:
             self._vehicle_transforms = [x.get_transform() for x in world.get_actors() if x.type_id == 'spectator']
 
-        spawned = False
-        while not self._stopped and not spawned:
+        while not self._stopped:
+            if self._vehicle_actor is not None:
+                break
+
             for transform in self._vehicle_transforms:
                 try:
                     self._vehicle_actor = create_vehicle(self._client, self._vehicle_blueprint_name, transform)
-                    spawned = True
                     break
                 except RuntimeError:
                     continue
