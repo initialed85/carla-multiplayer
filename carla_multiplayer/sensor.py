@@ -70,6 +70,10 @@ def get_sensor(client: carla.Client, actor_id: int) -> carla.ServerSideSensor:
     return sensor
 
 
+def delete_sensor(client: carla.Client, actor_id: int):
+    get_sensor(client, actor_id).destroy()
+
+
 def _carla_image_to_bgra_array(image: carla.Image):
     array = numpy.frombuffer(image.raw_data, dtype=numpy.dtype("uint8"))
     array = numpy.reshape(array, (image.height, image.width, 4))
@@ -194,3 +198,5 @@ if __name__ == '__main__':
 
     _sensor.stop()
     _sender.stop()
+
+    delete_sensor(_client, _sensor_id)
