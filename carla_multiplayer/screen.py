@@ -6,6 +6,8 @@ from PIL import Image
 
 from .udp import Receiver, Datagram
 
+_FPS = 30
+
 
 def _convert_webp_bytes_to_pygame_image(data: bytes, dimensions):
     buffer = BytesIO()
@@ -69,7 +71,7 @@ if __name__ == '__main__':
 
             _screen.update()
 
-            _clock.tick(24)
+            _clock.tick(_FPS)
         except KeyboardInterrupt:
             break
 
