@@ -44,20 +44,20 @@ class _LooperMixIn(object):
 
 class Looper(_LooperMixIn):
     def _loop(self):
-        if not self._before_loop():
+        if self._before_loop() is True:
             return
 
         while not self._stop_event.is_set():
-            if not self._before_work():
+            if self._before_work() is True:
                 continue
 
-            if not self._work():
+            if self._work() is True:
                 continue
 
-            if not self._after_work():
+            if self._after_work() is True:
                 continue
 
-        if not self._after_loop():
+        if self._after_loop() is True:
             return
 
 

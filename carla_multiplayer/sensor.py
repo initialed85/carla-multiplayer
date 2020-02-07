@@ -182,10 +182,10 @@ if __name__ == '__main__':
 
     _actor_id = create_sensor(_client, int(sys.argv[1])).id
 
-    _sender = Sender(int(sys.argv[2]), 8)
+    _sender = Sender(int(sys.argv[2]), 2)
     _sender.start()
 
-    _sensor = Sensor(_client, _actor_id, 16, _sender, sys.argv[3], int(sys.argv[4]))
+    _sensor = Sensor(_client, _actor_id, 2, _sender, sys.argv[3], int(sys.argv[4]))
     _sensor.start()
 
     while 1:

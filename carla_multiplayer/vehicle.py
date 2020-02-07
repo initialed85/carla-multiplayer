@@ -3,8 +3,9 @@ from typing import Optional
 
 import Pyro4
 
-from .controller import ControllerState
+from .controller import ControllerState, deserialize_controller_state
 from .looper import TimedLooper
+from .udp import Receiver
 
 try:  # cater for python3 -m (module) vs python3 (file)
     from . import wrapped_carla as carla
@@ -60,14 +61,15 @@ def delete_vehicle(client: carla.Client, actor_id: int):
     client.get_world().wait_for_tick()
 
 
-@Pyro4.expose
 class Vehicle(TimedLooper):
-    def __init__(self, client: carla.Client, actor_id: int, control_rate: float = _CONTROL_RATE, control_expire: float = _CONTROL_EXPIRE,
+    def __init__(self, receiver: Receiver, client: carla.Client, actor_id: int, control_rate: float = _CONTROL_RATE,
+            control_expire: float = _CONTROL_EXPIRE,
             reset_rate: float = _RESET_RATE):
         super().__init__(
             period=control_rate
         )
 
+        self._receiver: Receiver = receiver
         self._client: carla.Client = client
         self._actor_id: int = actor_id
         self._control_rate: float = control_rate
@@ -115,40 +117,44 @@ class Vehicle(TimedLooper):
             )
         )
 
-    @Pyro4.oneway
-    def apply_control(self, controller_state: ControllerState):
+    def _apply_control(self, controller_state: ControllerState):
         if controller_state is None:
             return
 
         self._controller_state = controller_state
         self._last_controller_state_received = datetime.datetime.now()
 
+    def recv(self, data):
+        _, controller_state = deserialize_controller_state(data)
+
+        self._apply_control(controller_state)
+
 
 if __name__ == '__main__':
     import sys
-    import traceback
+    import time
+
+    _receiver = Receiver(int(sys.argv[1]), 2)
 
     _client = carla.Client('localhost', 2000)
     _client.set_timeout(2.0)
 
     _transform = [x for x in _client.get_world().get_actors() if 'spectator' in x.type_id][0].get_transform()
 
-    _actor_id = create_vehicle(_client, sys.argv[1], _transform).id
+    _actor_id = create_vehicle(_client, sys.argv[2], _transform).id
 
-    _vehicle = Vehicle(_client, _actor_id)
+    _vehicle = Vehicle(_receiver, _client, _actor_id)
     _vehicle.start()
 
-    _DAEMON = Pyro4.Daemon(host=sys.argv[2], port=int(sys.argv[3]))
-    _uri = _DAEMON.register(_vehicle, 'vehicle')
-    print('listening at {}'.format(repr(_uri)))
+    _receiver.set_callback(_vehicle.recv)
 
-    try:
-        _DAEMON.requestLoop()
-    except Exception as e:
-        print('caught {}; traceback follows'.format(repr(e)))
-        traceback.print_exc()
-
-    print('shutting down')
+    while 1:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            break
 
     _vehicle.stop()
     delete_vehicle(_client, _actor_id)
+
+    _receiver.stop()

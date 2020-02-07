@@ -76,4 +76,4 @@ class SensorFunctionTest(unittest.TestCase):
 
 
 class SensorTest(unittest.TestCase):
-    pass  # TODO: hard to implement without a running Carla instance
+    pass  # TODO: carla makes testing hard

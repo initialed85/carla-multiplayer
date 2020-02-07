@@ -15,12 +15,8 @@ class ImplementationMixIn(object):
     def _before_loop(self):
         self.mock.before_loop()
 
-        return True
-
     def _before_work(self):
         self.mock.before_work()
-
-        return True
 
     def _work(self):
         self.mock.work()
@@ -28,17 +24,11 @@ class ImplementationMixIn(object):
 
         time.sleep(0.1)
 
-        return True
-
     def _after_work(self):
         self.mock.after_work()
 
-        return True
-
     def _after_loop(self):
         self.mock.after_loop()
-
-        return True
 
 
 class LooperImplementation(ImplementationMixIn, Looper):

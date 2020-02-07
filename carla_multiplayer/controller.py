@@ -1,8 +1,11 @@
-from typing import Callable, Dict, Tuple, Optional, NamedTuple, Any
+import json
+from queue import Empty
+from typing import Callable, Dict, Tuple, Optional, NamedTuple
 
 import pygame
 
 from .looper import TimedLooper
+from .udp import Sender
 
 _CONTROL_RATE = 1.0 / 10.0  # 10 Hz
 
@@ -16,11 +19,24 @@ class ControllerState(NamedTuple):
     reset: bool
 
 
-def handle_steer_deadzone(steer):
+def handle_steer_deadzone(steer) -> float:
     if -0.16 <= steer <= 0.16:
         steer = 0.0
 
     return steer
+
+
+def deserialize_controller_state(data: bytes) -> Tuple[int, ControllerState]:
+    data = json.loads(data.decode('utf-8'))
+
+    return data['actor_id'], ControllerState(**data['controller_state'])
+
+
+def serialize_controller_state(actor_id: int, controller_state: ControllerState) -> str:
+    return json.dumps({
+        'actor_id': actor_id,
+        'controller_state': controller_state._asdict()
+    }).encode('utf-8')
 
 
 class RawControllerState(NamedTuple):
@@ -76,7 +92,7 @@ class ControllerEventHandler(object):
         )
 
 
-class GamepadController(object):
+class _GamepadController(object):
     def __init__(self, controller_index: int, callback: Callable):
         self._controller_index: int = controller_index
         self._callback: Callable = callback
@@ -148,45 +164,56 @@ class GamepadController(object):
         self._handler.handle_event(event)
 
 
-class RateLimiter(TimedLooper):
-    def __init__(self, callback: Callable, rate=_CONTROL_RATE):
+class GamepadController(TimedLooper):
+    def __init__(self, sender: Sender, host: str, port: int, controller_index: int, rate=_CONTROL_RATE):
         super().__init__(
             period=rate
         )
 
-        self._value: Any = None
-        self._callback: Callable = callback
+        self._sender: Sender = sender
+        self._host: str = host
+        self._port: int = port
+        self._gamepad_controller = _GamepadController(
+            controller_index=controller_index,
+            callback=self._set_controller_state
+        )
 
-    def set_value(self, value: Any):
-        self._value = value
+        self._controller_state: Optional[ControllerState] = None
+
+    def _set_controller_state(self, value: Optional[ControllerState]):
+        self._controller_state = value
 
     def _work(self):
-        if self._value is None:
+        if self._controller_state is None:
             return
 
         try:
-            print(self._value)
-            self._callback(self._value)
-        except Exception as e:
-            print('warning: stifled {}'.format(repr(e)))
+            self._sender.send_datagram(
+                data=serialize_controller_state(0, self._controller_state),
+                address=(self._host, self._port)
+            )
+        except Empty:
+            pass
+
+    def handle_event(self, event: pygame.event.EventType):
+        self._gamepad_controller.handle_event(event)
 
 
 if __name__ == '__main__':
-    def _callback(controller_state: ControllerState):
-        print(controller_state)
-
-        return
-
+    import sys
 
     pygame.init()
 
-    _rate_limiter = RateLimiter(callback=_callback)
-    _rate_limiter.start()
+    _sender = Sender(int(sys.argv[1]), 2)
+    _sender.start()
 
     _controller = GamepadController(
-        controller_index=0,
-        callback=_rate_limiter.set_value
+        sender=_sender,
+        host=sys.argv[2],
+        port=int(sys.argv[3]),
+        controller_index=0
     )
+    _controller.start()
 
     _clock = pygame.time.Clock()
 
@@ -205,4 +232,5 @@ if __name__ == '__main__':
             break
 
     pygame.quit()
-    _rate_limiter.stop()
+    _controller.stop()
+    _sender.stop()
