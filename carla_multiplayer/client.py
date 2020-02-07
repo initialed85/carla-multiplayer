@@ -3,7 +3,7 @@ from typing import Union
 import Pyro4
 import pygame
 
-from .controller_gamepad import GamepadController
+from .controller import RateLimitedGamepadController
 from .screen import Screen
 from .udp import Receiver
 from .vehicle import Vehicle
@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     _vehicle: Union[Vehicle, Pyro4.Proxy] = Pyro4.Proxy('PYRO:vehicle@{}:13337'.format(sys.argv[1]))
 
-    _controller = GamepadController(int(sys.argv[2]), _vehicle.apply_control)
+    _controller = RateLimitedGamepadController(int(sys.argv[2]), _vehicle.apply_control)
 
     _receiver = Receiver(int(sys.argv[3]), 8)
 
