@@ -164,7 +164,10 @@ class RateLimiter(TimedLooper):
         if self._value is None:
             return
 
-        self._callback(self._value)
+        try:
+            self._callback(self._value)
+        except Exception as e:
+            print('warning: stifled {}'.format(repr(e)))
 
 
 if __name__ == '__main__':
