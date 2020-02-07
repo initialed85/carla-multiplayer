@@ -2,7 +2,7 @@ import unittest
 
 from mock import Mock, call
 
-from .sensor import create_sensor, _TRANSFORM, carla, get_sensor, delete_sensor
+from .sensor import create_sensor, _SENSOR_TRANSFORM, carla, get_sensor, delete_sensor
 
 
 class SensorFunctionTest(unittest.TestCase):
@@ -31,7 +31,7 @@ class SensorFunctionTest(unittest.TestCase):
                 call.get_world().get_blueprint_library().find().set_attribute('sensor_tick', '0.041666666666666664'),
                 call.get_world().get_blueprint_library().find().set_attribute('image_size_x', '640'),
                 call.get_world().get_blueprint_library().find().set_attribute('image_size_y', '360'),
-                call.get_world().spawn_actor(sensor_blueprint, _TRANSFORM, attach_to=actor, attachment_type=carla.AttachmentType.SpringArm),
+                call.get_world().spawn_actor(sensor_blueprint, _SENSOR_TRANSFORM, attach_to=actor, attachment_type=carla.AttachmentType.SpringArm),
                 call.get_world().wait_for_tick()],
             client.mock_calls
         )

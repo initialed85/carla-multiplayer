@@ -18,7 +18,7 @@ _FPS = 24
 _WIDTH = 640
 _HEIGHT = 360
 _SENSOR_BLUEPRINT_NAME = 'sensor.camera.rgb'
-_TRANSFORM = carla.Transform(
+_SENSOR_TRANSFORM = carla.Transform(
     carla.Location(-15, 0, 15),
     carla.Rotation(16.875, 0, 0)
 )
@@ -31,7 +31,7 @@ def create_sensor(
         fps: int = _FPS,
         width: int = _WIDTH,
         height: int = _HEIGHT,
-        transform: carla.Transform = _TRANSFORM) -> carla.ServerSideSensor:
+        transform: carla.Transform = _SENSOR_TRANSFORM) -> carla.ServerSideSensor:
     world = client.get_world()
     world.wait_for_tick()
 
@@ -100,19 +100,19 @@ def _carla_image_to_webp_bytes(image: carla.Image):
 
 
 class Sensor(Threader):
-    def __init__(self, client: carla.Client, actor_id: int, max_queue_size: int, sender: Sender, host: str, port: int):
+    def __init__(self, client: carla.Client, actor_id: int, queue_size: int, sender: Sender, host: str, port: int):
         super().__init__()
 
         self._client: carla.Client = client
         self._actor_id: int = actor_id
-        self._max_queue_size: int = max_queue_size
+        self._queue_size: int = queue_size
         self._sender: Sender = sender
         self._host: str = host
         self._port: int = port
 
         self._sensor: Optional[carla.ServerSideSensor] = None
-        self._carla_images: Queue = Queue(maxsize=self._max_queue_size)
-        self._webp_bytes: Queue = Queue(maxsize=self._max_queue_size)
+        self._carla_images: Queue = Queue(maxsize=self._queue_size)
+        self._webp_bytes: Queue = Queue(maxsize=self._queue_size)
 
     def _add_image_to_carla_images_queue(self, image: carla.Image):
         while not self._stop_event.is_set():

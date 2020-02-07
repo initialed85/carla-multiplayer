@@ -22,12 +22,11 @@ def _convert_webp_bytes_to_pygame_image(data: bytes, dimensions):
 
 
 class Screen(object):
-    def __init__(self, width: int, height: int, receiver: Receiver):
+    def __init__(self, width: int, height: int):
         super().__init__()
 
         self._width: int = width
         self._height: int = height
-        self._receiver: Receiver = receiver
 
         self._dimensions: Tuple[int, int] = (self._width, self._height)
 
@@ -53,16 +52,14 @@ class Screen(object):
 if __name__ == '__main__':
     import sys
 
+    pygame.init()
+
     _receiver = Receiver(int(sys.argv[1]), 8)
-
-    _screen = Screen(_WIDTH, _HEIGHT, _receiver)
-
+    _screen = Screen(_WIDTH, _HEIGHT)
     _receiver.set_callback(_screen.handle_webp_bytes)
     _receiver.start()
 
-    pygame.init()
     _clock = pygame.time.Clock()
-
     _stopped = False
     while not _stopped:
         try:
