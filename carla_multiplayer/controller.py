@@ -1,5 +1,4 @@
-from typing import Callable, Dict, Tuple, Optional
-from typing import NamedTuple
+from typing import Callable, Dict, Tuple, Optional, NamedTuple, Any
 
 import pygame
 
@@ -149,29 +148,23 @@ class GamepadController(object):
         self._handler.handle_event(event)
 
 
-class RateLimitedGamepadController(TimedLooper):
-    def __init__(self, controller_index: int, callback: Callable, control_rate: float = _CONTROL_RATE):
+class RateLimiter(TimedLooper):
+    def __init__(self, callback: Callable, rate=_CONTROL_RATE):
         super().__init__(
-            period=control_rate
+            period=rate
         )
 
-        self._controller_index = controller_index
-        self._callback = callback
+        self._value: Any = None
+        self._callback: Callable = callback
 
-        self._controller_state: Optional[ControllerState] = None
-        self._gamepad_controller = GamepadController(
-            controller_index=self._controller_index,
-            callback=self._handle_callback
-        )
-
-    def _handle_callback(self, controller_state: RawControllerState):
-        self._controller_state = controller_state
+    def set_value(self, value: Any):
+        self._value = value
 
     def _work(self):
-        self._callback(self._controller_state)
+        if self._value is None:
+            return
 
-    def handle_event(self, event: pygame.event.EventType):
-        self._gamepad_controller.handle_event(event)
+        self._callback(self._value)
 
 
 if __name__ == '__main__':
@@ -182,12 +175,13 @@ if __name__ == '__main__':
 
 
     pygame.init()
-    pygame.joystick.init()
-    pygame.display.set_mode()
+
+    _rate_limiter = RateLimiter(callback=_callback)
+    _rate_limiter.start()
 
     _controller = GamepadController(
         controller_index=0,
-        callback=_callback
+        callback=_rate_limiter.set_value
     )
 
     _clock = pygame.time.Clock()
@@ -207,3 +201,4 @@ if __name__ == '__main__':
             break
 
     pygame.quit()
+    _rate_limiter.stop()

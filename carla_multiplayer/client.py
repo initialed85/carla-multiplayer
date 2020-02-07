@@ -3,7 +3,7 @@ from typing import Union
 import Pyro4
 import pygame
 
-from .controller import RateLimitedGamepadController
+from .controller import GamepadController, RateLimiter
 from .screen import Screen
 from .udp import Receiver
 from .vehicle import Vehicle
@@ -13,7 +13,10 @@ if __name__ == '__main__':
 
     _vehicle: Union[Vehicle, Pyro4.Proxy] = Pyro4.Proxy('PYRO:vehicle@{}:13337'.format(sys.argv[1]))
 
-    _controller = RateLimitedGamepadController(int(sys.argv[2]), _vehicle.apply_control)
+    _rate_limiter = RateLimiter(_vehicle.apply_control)
+    _rate_limiter.start()
+
+    _controller = GamepadController(int(sys.argv[2]), _rate_limiter.set_value)
 
     _receiver = Receiver(int(sys.argv[3]), 8)
 
@@ -41,5 +44,6 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             break
 
+    _rate_limiter.stop()
     _receiver.stop()
     pygame.quit()

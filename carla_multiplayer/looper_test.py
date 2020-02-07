@@ -109,5 +109,5 @@ class TimedLooperTest(unittest.TestCase):
         self.assertAlmostEqual(
             0.2,
             average_frequency,
-            delta=0.003
+            delta=0.004
         )

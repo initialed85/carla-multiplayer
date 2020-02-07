@@ -4,7 +4,7 @@ from threading import Event, Thread
 from typing import Optional, Union
 
 
-class Looper(object):
+class _LooperMixIn(object):
     def __init__(self):
         self._stop_event = Event()
         self._thread: Optional[Thread] = None
@@ -25,21 +25,7 @@ class Looper(object):
         pass
 
     def _loop(self):
-        if not self._before_loop():
-            return
-
-        while not self._stop_event.is_set():
-            if not self._before_work():
-                continue
-
-            if not self._work():
-                continue
-
-            if not self._after_work():
-                continue
-
-        if not self._after_loop():
-            return
+        raise NotImplementedError('_work needs to be implemented')
 
     def start(self):
         self._stop_event.clear()
@@ -56,7 +42,26 @@ class Looper(object):
             self._thread = None
 
 
-class TimedLooper(Looper):
+class Looper(_LooperMixIn):
+    def _loop(self):
+        if not self._before_loop():
+            return
+
+        while not self._stop_event.is_set():
+            if not self._before_work():
+                continue
+
+            if not self._work():
+                continue
+
+            if not self._after_work():
+                continue
+
+        if not self._after_loop():
+            return
+
+
+class TimedLooper(_LooperMixIn):
     def __init__(self, period: Union[float, int]):
         super().__init__()
 
@@ -73,20 +78,20 @@ class TimedLooper(Looper):
         time.sleep((work_should_have_finished - work_finished).total_seconds())
 
     def _loop(self):
-        if not self._before_loop():
+        if self._before_loop() is False:
             return
 
         while not self._stop_event.is_set():
             work_started = datetime.datetime.now()
-            if not self._before_work():
+            if self._before_work() is False:
                 self._sleep(work_started)
                 continue
 
-            if not self._work():
+            if self._work() is False:
                 self._sleep(work_started)
                 continue
 
-            if not self._after_work():
+            if self._after_work() is False:
                 self._sleep(work_started)
                 continue
 
