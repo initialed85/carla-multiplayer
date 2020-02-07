@@ -111,6 +111,11 @@ class Sensor(Threader):
 
     def _add_image_to_carla_images_queue(self, image: carla.Image):
         while not self._stop_event.is_set():
+            print(repr(image.height))
+            print(repr(image.width))
+            print(repr(image.raw_data))
+            sys.exit(1)
+
             try:
                 self._carla_images.put_nowait(image)
                 break
