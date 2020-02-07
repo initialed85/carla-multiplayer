@@ -15,7 +15,7 @@ except ImportError:
 Pyro4.config.SERIALIZER = 'pickle'
 Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
 
-_CONTROL_RATE = 1.0 / 1.0  # 10 Hz
+_CONTROL_RATE = 1.0 / 10.0  # 10 Hz
 _CONTROL_EXPIRE = 1.0  # 1 s
 _RESET_RATE = 1.0 / 1.0  # 1 Hz
 
