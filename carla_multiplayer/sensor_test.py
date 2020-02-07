@@ -54,3 +54,7 @@ class SensorFunctionTest(unittest.TestCase):
                 call.get_world().wait_for_tick()],
             client.mock_calls
         )
+
+
+class SensorTest(unittest.TestCase):
+    pass  # TODO: hard to implement without a running Carla instance

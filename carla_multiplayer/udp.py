@@ -28,15 +28,27 @@ class _SocketMixIn(object):
 
 
 class Receiver(_SocketMixIn, Threader):
-    def __init__(self, port: int, max_queue_size: int, callback: Callable):
+    def __init__(self, port: int, max_queue_size: int, callback: Optional[Callable] = None):
         super().__init__()
 
         self._port: int = port
         self._max_queue_size: int = max_queue_size
-        self._callback: Callable = callback
+        self._callback: Optional[Callable] = None
 
         self._socket: Optional[socket.socket] = None
         self._datagrams: Queue = Queue(maxsize=self._max_queue_size)
+
+        if callback is not None:
+            self.set_callback(callback)
+
+    def set_callback(self, callback: Callable):
+        if not callable(callback):
+            raise TypeError('expected callback to be callable, but instead was {} of type {}'.format(
+                repr(callback),
+                type(callback)
+            ))
+
+        self._callback = callback
 
     def _fill_datagram_queue_from_socket(self):
         while not self._stop_event.is_set():
@@ -74,6 +86,10 @@ class Receiver(_SocketMixIn, Threader):
             try:
                 datagram = self._datagrams.get(timeout=1)
             except Empty:
+                continue
+
+            if self._callback is None:
+                print('warning: received datagram but callback is None; throwing away')
                 continue
 
             try:

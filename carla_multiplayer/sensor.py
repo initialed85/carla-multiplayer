@@ -111,11 +111,6 @@ class Sensor(Threader):
 
     def _add_image_to_carla_images_queue(self, image: carla.Image):
         while not self._stop_event.is_set():
-            print(repr(image.height))
-            print(repr(image.width))
-            print(repr(image.raw_data))
-            sys.exit(1)
-
             try:
                 self._carla_images.put_nowait(image)
                 break
@@ -174,20 +169,20 @@ if __name__ == '__main__':
     import sys
     import time
 
-    client = carla.Client('localhost', 2000)
-    client.set_timeout(2.0)
+    _client = carla.Client('localhost', 2000)
+    _client.set_timeout(2.0)
 
-    world = client.get_world()
-    blueprint_library = world.get_blueprint_library()
-    spectator = world.get_spectator()
-    vehicles = [x for x in world.get_actors().filter('vehicle.*')]
-    sensors = [x for x in world.get_actors().filter('sensor.*')]
+    _world = _client.get_world()
+    _blueprint_library = _world.get_blueprint_library()
+    _spectator = _world.get_spectator()
+    _vehicles = [x for x in _world.get_actors().filter('vehicle.*')]
+    _sensors = [x for x in _world.get_actors().filter('sensor.*')]
 
-    sender = Sender(int(sys.argv[1]), 8)
-    sender.start()
+    _sender = Sender(int(sys.argv[1]), 8)
+    _sender.start()
 
-    sensor = Sensor(client, sensors[-1].id, 16, sender, sys.argv[2], int(sys.argv[3]))
-    sensor.start()
+    _sensor = Sensor(_client, _sensors[-1].id, 16, _sender, sys.argv[2], int(sys.argv[3]))
+    _sensor.start()
 
     while 1:
         try:
@@ -195,5 +190,5 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             break
 
-    sensor.stop()
-    sender.stop()
+    _sensor.stop()
+    _sender.stop()
