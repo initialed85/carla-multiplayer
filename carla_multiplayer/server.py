@@ -79,16 +79,15 @@ class Server(object):
         if self._stopped:
             return
 
-        while not self._stopped:
-            self._sensor_actor = create_sensor(
-                self._client,
-                self._vehicle_actor.id,
-                self._sensor_blueprint_name,
-                _FPS,
-                _WIDTH,
-                _HEIGHT,
-                self._sensor_transform
-            )
+        self._sensor_actor = create_sensor(
+            self._client,
+            self._vehicle_actor.id,
+            self._sensor_blueprint_name,
+            _FPS,
+            _WIDTH,
+            _HEIGHT,
+            self._sensor_transform
+        )
 
         if self._stopped:
             return
