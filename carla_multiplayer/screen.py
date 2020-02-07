@@ -33,7 +33,7 @@ class Screen(object):
             pygame.HWSURFACE | pygame.DOUBLEBUF
         )
 
-        self._image: Image.Image = Optional[None]
+        self._image: Optional[Image.Image] = None
 
     def handle_webp_bytes(self, data):
         self._image = _convert_webp_bytes_to_pygame_image(data, self._dimensions)
