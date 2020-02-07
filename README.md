@@ -1,5 +1,14 @@
 # carla-multiplayer
-Multiplayer Carla using a ghetto game-streaming concept
+
+Multiplayer Carla using a ghetto game-streaming concept; in summary:
+
+- A vehicle and a sensor are created in Carla using Carla's PythonAPI
+- Controls are received as JSON via UDP and applied to the vehicle (using the PythonAPI)
+    - The controls are originally sourced from a PS4 or Xbox 360 controller
+- Images are pulled (using the PythonAPI), converted to .webp and sent via UDP
+    - The images are displayed using pyame  
+
+So, all the work and rendering is done server-side, the client-side merely captures input and displays the sensor images.
 
 ## Install (MacOS)
 
