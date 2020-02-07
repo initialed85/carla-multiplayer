@@ -107,6 +107,8 @@ class Vehicle(TimedLooper):
                 self._vehicle.apply_transform(transform)
                 self._last_reset = now
 
+        print(self._controller_state)
+
         self._vehicle.apply_control(
             carla.VehicleControl(
                 throttle=self._controller_state.throttle,
@@ -120,8 +122,6 @@ class Vehicle(TimedLooper):
     def _apply_control(self, controller_state: ControllerState):
         if controller_state is None:
             return
-
-        print(controller_state)
 
         self._controller_state = controller_state
         self._last_controller_state_received = datetime.datetime.now()
