@@ -178,10 +178,10 @@ if __name__ == '__main__':
     vehicles = [x for x in world.get_actors().filter('vehicle.*')]
     sensors = [x for x in world.get_actors().filter('sensor.*')]
 
-    sender = Sender(sys.argv[1], 8)
+    sender = Sender(int(sys.argv[1]), 8)
     sender.start()
 
-    sensor = Sensor(client, sensors[-1].id, 16, sender, sys.argv[2], sys.argv[3])
+    sensor = Sensor(client, sensors[-1].id, 16, sender, sys.argv[2], int(sys.argv[3]))
     sensor.start()
 
     while 1:
