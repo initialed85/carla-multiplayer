@@ -174,14 +174,15 @@ if __name__ == '__main__':
 
     _world = _client.get_world()
     _blueprint_library = _world.get_blueprint_library()
-    _spectator = _world.get_spectator()
-    _vehicles = [x for x in _world.get_actors().filter('vehicle.*')]
-    _sensors = [x for x in _world.get_actors().filter('sensor.*')]
+
+    _actors = _world.get_actors().filter('vehicle.*')
+
+    sensor = create_sensor(_client, _actors[-1].id)
 
     _sender = Sender(int(sys.argv[1]), 8)
     _sender.start()
 
-    _sensor = Sensor(_client, _sensors[-1].id, 16, _sender, sys.argv[2], int(sys.argv[3]))
+    _sensor = Sensor(_client, sensor.id, 16, _sender, sys.argv[2], int(sys.argv[3]))
     _sensor.start()
 
     while 1:

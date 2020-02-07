@@ -4,7 +4,7 @@ from typing import Tuple, Optional
 import pygame
 from PIL import Image
 
-from .udp import Receiver
+from .udp import Receiver, Datagram
 
 
 def _convert_webp_bytes_to_pygame_image(data: bytes, dimensions):
@@ -35,8 +35,8 @@ class Screen(object):
 
         self._image: Optional[Image.Image] = None
 
-    def handle_webp_bytes(self, data):
-        self._image = _convert_webp_bytes_to_pygame_image(data, self._dimensions)
+    def handle_webp_bytes(self, datagram: Datagram):
+        self._image = _convert_webp_bytes_to_pygame_image(datagram.data, self._dimensions)
 
     def update(self):
         if self._image is None:
