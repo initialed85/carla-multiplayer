@@ -130,6 +130,7 @@ if __name__ == '__main__':
     _actor_id = create_vehicle(_client, sys.argv[1], _transform).id
 
     _vehicle = Vehicle(_client, _actor_id)
+    _vehicle.start()
 
     _DAEMON = Pyro4.Daemon(host=sys.argv[2], port=int(sys.argv[3]))
     _uri = _DAEMON.register(_vehicle, 'vehicle')
@@ -143,4 +144,5 @@ if __name__ == '__main__':
 
     print('shutting down')
 
+    _vehicle.stop()
     delete_vehicle(_client, _actor_id)
