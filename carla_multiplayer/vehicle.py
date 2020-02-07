@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     _transform = [x for x in _client.get_world().get_actors() if 'spectator' in x.type_id][0].get_transform()
 
-    _actor_id = create_vehicle(_client, sys.argv[1], _transform)
+    _actor_id = create_vehicle(_client, sys.argv[1], _transform).id
 
     _vehicle = Vehicle(_client, _actor_id)
 
