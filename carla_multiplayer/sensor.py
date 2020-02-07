@@ -163,3 +163,18 @@ class Sensor(Threader):
 
     def _after_stop(self):
         self._actor.stop()
+
+
+if __name__ == '__main__':
+    import code
+
+    client = carla.Client('', 2000)
+    client.set_timeout(2.0)
+
+    world = client.get_world()
+    blueprint_library = world.get_blueprint_library()
+    spectator = world.get_spectator()
+    vehicles = [x for x in world.get_actors().filter('vehicle.*')]
+    sensors = [x for x in world.get_actors().filter('sensor.*')]
+
+    code.interact(local=locals())
