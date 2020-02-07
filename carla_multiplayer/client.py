@@ -4,8 +4,6 @@ from .controller import GamepadController
 from .screen import Screen
 from .udp import Sender, Receiver
 
-_CONTROLLER_PORT = 13337
-_SCREEN_PORT = 13338
 _CONTROLLER_INDEX = 0
 _QUEUE_SIZE = 2
 _WIDTH = 1280
@@ -16,16 +14,16 @@ _FPS = 24
 class Client(object):
     def __init__(self,
             host: str,
+            controller_port: int ,
+            screen_port: int ,
             controller_index: int = _CONTROLLER_INDEX,
-            controller_port: int = _CONTROLLER_PORT,
-            screen_port: int = _SCREEN_PORT,
             width: int = _WIDTH,
             height: int = _HEIGHT,
             queue_size: int = _QUEUE_SIZE):
         self._host: str = host
-        self._controller_index: int = controller_index
         self._controller_port: int = controller_port
         self._screen_port: int = screen_port
+        self._controller_index: int = controller_index
         self._width: int = width
         self._height: int = height
         self._queue_size: int = queue_size
@@ -81,9 +79,9 @@ class Client(object):
 
 
 def run_client(host: str,
+        controller_port: int,
+        screen_port: int,
         controller_index: int = _CONTROLLER_INDEX,
-        controller_port: int = _CONTROLLER_PORT,
-        screen_port: int = _SCREEN_PORT,
         width: int = _WIDTH,
         height: int = _HEIGHT,
         queue_size: int = _QUEUE_SIZE):
