@@ -1,9 +1,9 @@
 import time
 from typing import Optional, List
 
-from .sensor import create_sensor, _SENSOR_BLUEPRINT_NAME, _SENSOR_TRANSFORM, _FPS, _WIDTH, _HEIGHT, Sensor
+from .sensor import create_sensor, _SENSOR_BLUEPRINT_NAME, _SENSOR_TRANSFORM, _FPS, _WIDTH, _HEIGHT, Sensor, delete_sensor
 from .udp import Receiver, Sender
-from .vehicle import create_vehicle, Vehicle
+from .vehicle import create_vehicle, Vehicle, delete_vehicle
 
 try:  # cater for python3 -m (module) vs python3 (file)
     from . import wrapped_carla as carla
@@ -119,9 +119,11 @@ class Server(object):
 
         self._sensor.stop()
         self._sender.stop()
+        delete_sensor(self._client, self._sensor_actor.id)
 
         self._vehicle.stop()
         self._receiver.stop()
+        delete_vehicle(self._client, self._vehicle_actor.id)
 
 
 def run_server(vehicle_port: int,
