@@ -179,12 +179,12 @@ if __name__ == '__main__':
     _world = _client.get_world()
     _blueprint_library = _world.get_blueprint_library()
 
-    _sender = Sender(int(sys.argv[1]), 8)
+    _sensor_id = create_sensor(_client, int(sys.argv[1])).id
+
+    _sender = Sender(int(sys.argv[2]), 8)
     _sender.start()
 
-    _sensor_id = create_sensor(_client, int(sys.argv[2])).id
-
-    _sensor = Sensor(_client, _sensor_id, 16, _sender, sys.argv[2], int(sys.argv[3]))
+    _sensor = Sensor(_client, _sensor_id, 16, _sender, sys.argv[3], int(sys.argv[3]))
     _sensor.start()
 
     while 1:
