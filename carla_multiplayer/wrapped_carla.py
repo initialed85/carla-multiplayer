@@ -10,11 +10,9 @@ sys.path.append(
 try:
     from carla import *
 except ImportError as e:
-    print(1, e)
     try:
         from .carla import *
     except ImportError as e:  # hack for platforms that don't support or don't have Carla
-        print(2, e)
         print('warning: failed to import carla because {}; objects are mocked'.format(repr(e)))
 
     from mock import MagicMock
