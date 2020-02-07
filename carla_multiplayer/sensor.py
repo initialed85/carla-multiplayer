@@ -72,6 +72,7 @@ def get_sensor(client: carla.Client, actor_id: int) -> carla.ServerSideSensor:
 
 def delete_sensor(client: carla.Client, actor_id: int):
     get_sensor(client, actor_id).destroy()
+    client.get_world().wait_for_tick()
 
 
 def _carla_image_to_bgra_array(image: carla.Image):
@@ -109,7 +110,7 @@ class Sensor(Threader):
         self._host: str = host
         self._port: int = port
 
-        self._actor: Optional[carla.Actor] = None
+        self._sensor: Optional[carla.ServerSideSensor] = None
         self._carla_images: Queue = Queue(maxsize=self._max_queue_size)
         self._webp_bytes: Queue = Queue(maxsize=self._max_queue_size)
 
@@ -162,11 +163,11 @@ class Sensor(Threader):
         ]
 
     def _before_start(self):
-        self._actor = get_sensor(self._client, self._actor_id)
-        self._actor.listen(self._add_image_to_carla_images_queue)
+        self._sensor = get_sensor(self._client, self._actor_id)
+        self._sensor.listen(self._add_image_to_carla_images_queue)
 
     def _after_stop(self):
-        self._actor.stop()
+        self._sensor.stop()
 
 
 if __name__ == '__main__':
@@ -179,12 +180,12 @@ if __name__ == '__main__':
     _world = _client.get_world()
     _blueprint_library = _world.get_blueprint_library()
 
-    _sensor_id = create_sensor(_client, int(sys.argv[1])).id
+    _actor_id = create_sensor(_client, int(sys.argv[1])).id
 
     _sender = Sender(int(sys.argv[2]), 8)
     _sender.start()
 
-    _sensor = Sensor(_client, _sensor_id, 16, _sender, sys.argv[3], int(sys.argv[4]))
+    _sensor = Sensor(_client, _actor_id, 16, _sender, sys.argv[3], int(sys.argv[4]))
     _sensor.start()
 
     while 1:
@@ -196,4 +197,4 @@ if __name__ == '__main__':
     _sensor.stop()
     _sender.stop()
 
-    delete_sensor(_client, _sensor_id)
+    delete_sensor(_client, _actor_id)

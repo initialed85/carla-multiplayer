@@ -198,5 +198,4 @@ if __name__ == '__main__':
         traceback.print_exc()
 
     print('shutting down')
-
     _server.stop()

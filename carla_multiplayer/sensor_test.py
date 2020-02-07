@@ -2,7 +2,7 @@ import unittest
 
 from mock import Mock, call
 
-from .sensor import create_sensor, _TRANSFORM, carla, get_sensor
+from .sensor import create_sensor, _TRANSFORM, carla, get_sensor, delete_sensor
 
 
 class SensorFunctionTest(unittest.TestCase):
@@ -51,6 +51,25 @@ class SensorFunctionTest(unittest.TestCase):
             [call.get_world(),
                 call.get_world().wait_for_tick(),
                 call.get_world().get_actor(2),
+                call.get_world().wait_for_tick()],
+            client.mock_calls
+        )
+
+    def test_delete_sensor(self):
+        client = Mock()
+        sensor = Mock()
+        sensor.id = 2
+        client.get_world.return_value.get_actor.return_value = sensor
+
+        delete_sensor(client, sensor.id)
+
+        self.assertEqual(
+            [call.get_world(),
+                call.get_world().wait_for_tick(),
+                call.get_world().get_actor(2),
+                call.get_world().wait_for_tick(),
+                call.get_world().get_actor().destroy(),
+                call.get_world(),
                 call.get_world().wait_for_tick()],
             client.mock_calls
         )
