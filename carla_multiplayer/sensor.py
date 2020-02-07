@@ -176,13 +176,14 @@ if __name__ == '__main__':
     _blueprint_library = _world.get_blueprint_library()
 
     _actors = _world.get_actors().filter('vehicle.*')
+    print(_actors)
 
-    sensor = create_sensor(_client, _actors[-1].id)
+    _sensor_id = create_sensor(_client, _actors[-1].id).id
 
     _sender = Sender(int(sys.argv[1]), 8)
     _sender.start()
 
-    _sensor = Sensor(_client, sensor.id, 16, _sender, sys.argv[2], int(sys.argv[3]))
+    _sensor = Sensor(_client, _sensor_id, 16, _sender, sys.argv[2], int(sys.argv[3]))
     _sensor.start()
 
     while 1:
