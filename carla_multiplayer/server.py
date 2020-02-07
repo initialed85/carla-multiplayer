@@ -65,13 +65,10 @@ class Server(object):
         if self._vehicle_transforms is None:
             self._vehicle_transforms = [x.get_transform() for x in world.get_actors() if x.type_id == 'spectator']
 
-        blueprint_library = world.get_blueprint_library()
-
-        vehicle_blueprint = blueprint_library.find(self._vehicle_blueprint_name)
         while not self._stopped:
             for transform in self._vehicle_transforms:
                 try:
-                    self._vehicle_actor = create_vehicle(self._client, vehicle_blueprint, transform)
+                    self._vehicle_actor = create_vehicle(self._client, self._vehicle_blueprint_name, transform)
 
                     break
                 except RuntimeError:
@@ -80,12 +77,11 @@ class Server(object):
         if self._stopped:
             return
 
-        sensor_blueprint = blueprint_library.find(self._sensor_blueprint_name)
         while not self._stopped:
             self._sensor_actor = create_sensor(
                 self._client,
                 self._vehicle_actor.id,
-                sensor_blueprint,
+                self._sensor_blueprint_name,
                 _FPS,
                 _WIDTH,
                 _HEIGHT,
