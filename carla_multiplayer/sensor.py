@@ -158,7 +158,7 @@ class Sensor(Threader):
         ]
 
     def _before_start(self):
-        self._actor = get_sensor(self._client, self._actor)
+        self._actor = get_sensor(self._client, self._actor_id)
         self._actor.listen(self._add_image_to_carla_images_queue)
 
     def _after_stop(self):
