@@ -8,6 +8,9 @@ from .screen import Screen
 from .udp import Receiver
 from .vehicle import Vehicle
 
+Pyro4.config.SERIALIZER = 'pickle'
+Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
+
 if __name__ == '__main__':
     import sys
 

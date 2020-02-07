@@ -11,6 +11,9 @@ try:  # cater for python3 -m (module) vs python3 (file)
 except ImportError:
     import wrapped_carla as carla
 
+Pyro4.config.SERIALIZER = 'pickle'
+Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
+
 _CONTROL_RATE = 1.0 / 1.0  # 10 Hz
 _CONTROL_EXPIRE = 1.0  # 1 s
 _RESET_RATE = 1.0 / 1.0  # 1 Hz
@@ -79,6 +82,9 @@ class Vehicle(TimedLooper):
 
         self._vehicle: Optional[carla.Actor] = None
 
+    def _before_loop(self):
+        self._vehicle = get_vehicle(self._client, self._actor_id)
+
     def _work(self):
         now = datetime.datetime.now()
 
@@ -109,15 +115,12 @@ class Vehicle(TimedLooper):
             )
         )
 
-    def _before_loop(self):
-        self._vehicle = get_vehicle(self._client, self._actor_id)
-
     @Pyro4.oneway
     def apply_control(self, controller_state: ControllerState):
         if controller_state is None:
             return
 
-        self._controller_state = ControllerState(*controller_state)
+        self._controller_state = controller_state
         self._last_controller_state_received = datetime.datetime.now()
 
 
