@@ -6,7 +6,7 @@ from PIL import Image
 
 from .udp import Receiver, Datagram
 
-_FPS = 24
+_FPS = 30
 _WIDTH = 1280
 _HEIGHT = 720
 

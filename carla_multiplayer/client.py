@@ -8,7 +8,7 @@ _CONTROLLER_INDEX = 0
 _QUEUE_SIZE = 2
 _WIDTH = 1280
 _HEIGHT = 720
-_FPS = 24
+_FPS = 30
 
 
 class Client(object):
