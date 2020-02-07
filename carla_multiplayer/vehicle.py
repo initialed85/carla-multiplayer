@@ -114,7 +114,10 @@ class Vehicle(TimedLooper):
 
     @Pyro4.oneway
     def apply_control(self, controller_state: ControllerState):
-        self._controller_state = controller_state
+        if controller_state is None:
+            return
+
+        self._controller_state = ControllerState(*controller_state)
         self._last_controller_state_received = datetime.datetime.now()
 
 
