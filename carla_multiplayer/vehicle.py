@@ -84,6 +84,7 @@ class Vehicle(TimedLooper):
 
         if self._last_controller_state_received is not None:
             if now - self._last_controller_state_received > self._control_expire_delta:
+                print('safe control applied')
                 self._vehicle.apply_control(_SAFE_CONTROL)
                 return
 
@@ -99,6 +100,7 @@ class Vehicle(TimedLooper):
                 self._vehicle.apply_transform(transform)
                 self._last_reset = now
 
+        print('control applied')
         self._vehicle.apply_control(
             carla.VehicleControl(
                 throttle=self._controller_state.throttle,
@@ -114,6 +116,8 @@ class Vehicle(TimedLooper):
 
     @Pyro4.oneway
     def apply_control(self, controller_state: ControllerState):
+        print('control requested')
+
         self._controller_state = controller_state
         self._last_controller_state_received = datetime.datetime.now()
 
