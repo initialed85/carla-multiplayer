@@ -28,7 +28,7 @@ class SensorFunctionTest(unittest.TestCase):
                 call.get_world().wait_for_tick(),
                 call.get_world().get_blueprint_library(),
                 call.get_world().get_blueprint_library().find('sensor.camera.rgb'),
-                call.get_world().get_blueprint_library().find().set_attribute('sensor_tick', '0.041666666666666664'),
+                call.get_world().get_blueprint_library().find().set_attribute('sensor_tick', '0.03333333333333333'),
                 call.get_world().get_blueprint_library().find().set_attribute('image_size_x', '640'),
                 call.get_world().get_blueprint_library().find().set_attribute('image_size_y', '360'),
                 call.get_world().spawn_actor(sensor_blueprint, _SENSOR_TRANSFORM, attach_to=actor, attachment_type=carla.AttachmentType.SpringArm),
