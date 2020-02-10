@@ -44,10 +44,10 @@ class Server(object):
         self._vehicle_actor: carla.Actor = None
         self._sensor_actor: carla.Actor = None
 
-        self._receiver: Receiver = Receiver(self._vehicle_port, self._queue_depth)
+        self._receiver: Receiver = Receiver(self._vehicle_port, self._queue_depth, use_shared_socket=True)
         self._vehicle: Optional[Vehicle] = None
 
-        self._sender: Sender = Sender(self._sensor_port, self._queue_depth)
+        self._sender: Sender = Sender(self._sensor_port, self._queue_depth, use_shared_socket=True)
         self._sensor: Optional[Sensor] = None
 
         self._client: carla.Client = carla.Client(self._carla_host, self._carla_port)
@@ -126,8 +126,7 @@ class Server(object):
         delete_vehicle(self._client, self._vehicle_actor.id)
 
 
-def run_server(vehicle_port: int,
-        sensor_port: int,
+def run_server(port: int,
         vehicle_blueprint_name: str,
         client_host: str,
         vehicle_transforms: Optional[List[carla.Transform]] = None,
@@ -138,8 +137,8 @@ def run_server(vehicle_port: int,
         carla_timeout: int = _CARLA_TIMEOUT,
         queue_depth: int = _QUEUE_DEPTH):
     server = Server(
-        vehicle_port=vehicle_port,
-        sensor_port=sensor_port,
+        vehicle_port=port,
+        sensor_port=port,
         vehicle_blueprint_name=vehicle_blueprint_name,
         client_host=client_host,
         vehicle_transforms=vehicle_transforms,
@@ -159,4 +158,4 @@ def run_server(vehicle_port: int,
 if __name__ == '__main__':
     import sys
 
-    run_server(int(sys.argv[1]), int(sys.argv[2]), sys.argv[3], sys.argv[4])
+    run_server(int(sys.argv[1]), sys.argv[2], sys.argv[3])

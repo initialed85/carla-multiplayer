@@ -30,9 +30,9 @@ class Client(object):
 
         pygame.init()
 
-        self._sender: Sender = Sender(self._controller_port, self._queue_size)
+        self._sender: Sender = Sender(self._controller_port, self._queue_size, use_shared_socket=True)
         self._controller: GamepadController = GamepadController(self._sender, self._host, self._controller_port, self._controller_index)
-        self._receiver: Receiver = Receiver(self._screen_port, self._queue_size)
+        self._receiver: Receiver = Receiver(self._screen_port, self._queue_size, use_shared_socket=True)
         self._screen: Screen = Screen(self._width, self._height)
         self._receiver.set_callback(self._screen.handle_webp_bytes)
         self._clock: pygame.time.Clock = pygame.time.Clock()
@@ -79,8 +79,7 @@ class Client(object):
 
 
 def run_client(host: str,
-        controller_port: int,
-        screen_port: int,
+        port: int,
         controller_index: int = _CONTROLLER_INDEX,
         width: int = _WIDTH,
         height: int = _HEIGHT,
@@ -88,8 +87,8 @@ def run_client(host: str,
     client = Client(
         host=host,
         controller_index=controller_index,
-        controller_port=controller_port,
-        screen_port=screen_port,
+        controller_port=port,
+        screen_port=port,
         width=width,
         height=height,
         queue_size=queue_size
@@ -103,4 +102,4 @@ def run_client(host: str,
 if __name__ == '__main__':
     import sys
 
-    run_client(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))
+    run_client(sys.argv[1], int(sys.argv[2]))

@@ -7,6 +7,7 @@ from typing import Optional, NamedTuple, Tuple, Callable
 from .threader import Threader
 
 _MAX_UDP_DATAGRAM = 65507  # https://en.wikipedia.org/wiki/User_Datagram_Protocol#UDP_datagram_structure
+_SOCKET = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
 class Datagram(NamedTuple):
@@ -17,23 +18,29 @@ class Datagram(NamedTuple):
 class _SocketMixIn(object):
     _socket: Optional[socket.socket]
     _port: int
+    _use_shared_socket: bool
 
     def _before_start(self):
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._socket = _SOCKET if self._use_shared_socket else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
         self._socket.settimeout(1)
-        self._socket.bind(('', self._port))
+        try:
+            self._socket.bind(('', self._port))
+        except OSError:  # likely _use_shared_socket is True and socket is already bound
+            pass
 
     def _after_stop(self):
         self._socket = None
 
 
 class Receiver(_SocketMixIn, Threader):
-    def __init__(self, port: int, max_queue_size: int, callback: Optional[Callable] = None):
+    def __init__(self, port: int, max_queue_size: int, callback: Optional[Callable] = None, use_shared_socket: bool = False):
         super().__init__()
 
         self._port: int = port
         self._max_queue_size: int = max_queue_size
         self._callback: Optional[Callable] = None
+        self._use_shared_socket: bool = use_shared_socket
 
         self._socket: Optional[socket.socket] = None
         self._datagrams: Queue = Queue(maxsize=self._max_queue_size)
@@ -111,11 +118,12 @@ class Receiver(_SocketMixIn, Threader):
 
 
 class Sender(_SocketMixIn, Threader):
-    def __init__(self, port: int, max_queue_size: int):
+    def __init__(self, port: int, max_queue_size: int, use_shared_socket: bool = False):
         super().__init__()
 
         self._port: int = port
         self._max_queue_size: int = max_queue_size
+        self._use_shared_socket: bool = use_shared_socket
 
         self._socket: Optional[socket.socket] = None
         self._datagrams: Queue = Queue(maxsize=self._max_queue_size)
@@ -145,14 +153,6 @@ class Sender(_SocketMixIn, Threader):
         self._threads = [
             Thread(target=self._drain_datagram_queue_to_socket),
         ]
-
-    def _before_start(self):
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._socket.settimeout(1)
-        self._socket.bind(('', self._port))
-
-    def _after_stop(self):
-        self._socket = None
 
     def send_datagram(self, data, address):
         self._datagrams.put_nowait(
