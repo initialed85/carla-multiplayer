@@ -17,10 +17,14 @@ class Datagram(NamedTuple):
 class _SocketMixIn(object):
     _socket: Optional[socket.socket]
     _port: int
-    _socket_override: Optional[socket.socket]
+    _use_socket_from: Optional['_SocketMixIn']  # because this type isn't defined yet
+    socket: socket.socket
 
     def _before_start(self):
-        self._socket = self._socket_override if self._socket_override else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        if self._use_socket_from is not None:
+            self._socket = self._use_socket_from.socket
+        else:
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self._socket.settimeout(1)
         try:
@@ -33,13 +37,13 @@ class _SocketMixIn(object):
 
 
 class Receiver(_SocketMixIn, Threader):
-    def __init__(self, port: int, queue_size: int, callback: Optional[Callable] = None, socket_override: socket.socket = None):
+    def __init__(self, port: int, queue_size: int, callback: Optional[Callable] = None, use_socket_from: Optional[_SocketMixIn] = None):
         super().__init__()
 
         self._port: int = port
         self._queue_size: int = queue_size
         self._callback: Optional[Callable] = None
-        self._socket_override: Optional[socket.socket] = socket_override
+        self._use_socket_from: Optional[_SocketMixIn] = use_socket_from
 
         self._socket: Optional[socket.socket] = None
         self._datagrams: Queue = Queue(maxsize=self._queue_size)
@@ -121,12 +125,12 @@ class Receiver(_SocketMixIn, Threader):
 
 
 class Sender(_SocketMixIn, Threader):
-    def __init__(self, port: int, queue_size: int, socket_override: socket.socket = None):
+    def __init__(self, port: int, queue_size: int, use_socket_from: Optional[_SocketMixIn] = None):
         super().__init__()
 
         self._port: int = port
         self._queue_size: int = queue_size
-        self._socket_override: Optional[socket.socket] = socket_override
+        self._use_socket_from: Optional[_SocketMixIn] = use_socket_from
 
         self._socket: Optional[socket.socket] = None
         self._datagrams: Queue = Queue(maxsize=self._queue_size)

@@ -64,7 +64,7 @@ class Server(object):
         self._sender: Sender = Sender(
             port=self._sensor_port,
             queue_size=self._queue_size,
-            socket_override=self._receiver.socket
+            use_socket_from=self._receiver
         )
         self._sensor: Optional[Sensor] = None
 

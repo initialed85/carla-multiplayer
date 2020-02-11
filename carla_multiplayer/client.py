@@ -42,7 +42,7 @@ class Client(object):
         self._receiver: Receiver = Receiver(
             port=self._screen_port,
             queue_size=self._queue_size,
-            socket_override=self._sender.socket
+            use_socket_from=self._sender
         )
         self._screen: Screen = Screen(
             width=self._width,

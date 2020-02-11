@@ -65,7 +65,7 @@ class ReceiverAndSenderSharedSocketTest(ReceiverAndSenderBase):
         self.receiver = Receiver(20000, 8, self._receiver_callback)
         self.receiver.start()
 
-        self.sender = Sender(20000, 1024, socket_override=self.receiver.socket)
+        self.sender = Sender(20000, 1024, use_socket_from=self.receiver)
         self.sender.start()
 
     def test_lifecycle(self):
