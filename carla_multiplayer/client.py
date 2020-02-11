@@ -32,7 +32,6 @@ class Client(object):
         self._sender: Sender = Sender(
             port=self._controller_port,
             queue_size=self._queue_size,
-            use_shared_socket=True
         )
         self._controller: GamepadController = GamepadController(
             sender=self._sender,
@@ -43,7 +42,7 @@ class Client(object):
         self._receiver: Receiver = Receiver(
             port=self._screen_port,
             queue_size=self._queue_size,
-            use_shared_socket=True
+            socket_override=self._sender.socket
         )
         self._screen: Screen = Screen(
             width=self._width,

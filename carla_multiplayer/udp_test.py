@@ -62,10 +62,10 @@ class ReceiverAndSenderSharedSocketTest(ReceiverAndSenderBase):
     def setUp(self):
         self._datagrams: List[Datagram] = []
 
-        self.receiver = Receiver(20000, 8, self._receiver_callback, use_shared_socket=True)
+        self.receiver = Receiver(20000, 8, self._receiver_callback)
         self.receiver.start()
 
-        self.sender = Sender(20000, 1024, use_shared_socket=True)
+        self.sender = Sender(20000, 1024, socket_override=self.receiver.socket)
         self.sender.start()
 
     def test_lifecycle(self):

@@ -7,7 +7,6 @@ from typing import Optional, NamedTuple, Tuple, Callable
 from .threader import Threader
 
 _MAX_UDP_DATAGRAM = 65507  # https://en.wikipedia.org/wiki/User_Datagram_Protocol#UDP_datagram_structure
-_SOCKET = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
 class Datagram(NamedTuple):
@@ -18,10 +17,10 @@ class Datagram(NamedTuple):
 class _SocketMixIn(object):
     _socket: Optional[socket.socket]
     _port: int
-    _use_shared_socket: bool
+    _socket_override: Optional[socket.socket]
 
     def _before_start(self):
-        self._socket = _SOCKET if self._use_shared_socket else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._socket = self._socket_override if self._socket_override else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self._socket.settimeout(1)
         try:
@@ -34,19 +33,23 @@ class _SocketMixIn(object):
 
 
 class Receiver(_SocketMixIn, Threader):
-    def __init__(self, port: int, queue_size: int, callback: Optional[Callable] = None, use_shared_socket: bool = False):
+    def __init__(self, port: int, queue_size: int, callback: Optional[Callable] = None, socket_override: socket.socket = None):
         super().__init__()
 
         self._port: int = port
         self._queue_size: int = queue_size
         self._callback: Optional[Callable] = None
-        self._use_shared_socket: bool = use_shared_socket
+        self._socket_override: Optional[socket.socket] = socket_override
 
         self._socket: Optional[socket.socket] = None
         self._datagrams: Queue = Queue(maxsize=self._queue_size)
 
         if callback is not None:
             self.set_callback(callback)
+
+    @property
+    def socket(self):
+        return self._socket
 
     def set_callback(self, callback: Callable):
         if not callable(callback):
@@ -118,15 +121,19 @@ class Receiver(_SocketMixIn, Threader):
 
 
 class Sender(_SocketMixIn, Threader):
-    def __init__(self, port: int, queue_size: int, use_shared_socket: bool = False):
+    def __init__(self, port: int, queue_size: int, socket_override: socket.socket = None):
         super().__init__()
 
         self._port: int = port
         self._queue_size: int = queue_size
-        self._use_shared_socket: bool = use_shared_socket
+        self._socket_override: Optional[socket.socket] = socket_override
 
         self._socket: Optional[socket.socket] = None
         self._datagrams: Queue = Queue(maxsize=self._queue_size)
+
+    @property
+    def socket(self):
+        return self._socket
 
     def _drain_datagram_queue_to_socket(self):
         while not self._stop_event.is_set():

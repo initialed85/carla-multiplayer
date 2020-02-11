@@ -58,14 +58,13 @@ class Server(object):
         self._receiver: Receiver = Receiver(
             port=self._vehicle_port,
             queue_size=self._queue_size,
-            use_shared_socket=True
         )
         self._vehicle: Optional[Vehicle] = None
 
         self._sender: Sender = Sender(
             port=self._sensor_port,
             queue_size=self._queue_size,
-            use_shared_socket=True
+            socket_override=self._receiver.socket
         )
         self._sensor: Optional[Sensor] = None
 
