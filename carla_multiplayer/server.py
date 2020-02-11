@@ -10,7 +10,6 @@ try:  # cater for python3 -m (module) vs python3 (file)
 except ImportError:
     import wrapped_carla as carla
 
-_CARLA_HOST = 'localhost'
 _CARLA_PORT = 2000
 _CARLA_TIMEOUT = 2.0
 _QUEUE_SIZE = 2
@@ -22,10 +21,10 @@ class Server(object):
             sensor_port: int,
             vehicle_blueprint_name: str,
             client_host: str,
+            carla_host: str,
             vehicle_transforms: Optional[List[carla.Transform]] = None,
             sensor_blueprint_name: str = _SENSOR_BLUEPRINT_NAME,
             sensor_transform: carla.Transform = _SENSOR_TRANSFORM,
-            carla_host: str = _CARLA_HOST,
             carla_port: int = _CARLA_PORT,
             carla_timeout: int = _CARLA_TIMEOUT,
             queue_size: int = _QUEUE_SIZE,
@@ -164,10 +163,10 @@ class Server(object):
 def run_server(port: int,
         vehicle_blueprint_name: str,
         client_host: str,
+        carla_host: str,
         vehicle_transforms: Optional[List[carla.Transform]] = None,
         sensor_blueprint_name: str = _SENSOR_BLUEPRINT_NAME,
         sensor_transform: carla.Transform = _SENSOR_TRANSFORM,
-        carla_host: str = _CARLA_HOST,
         carla_port: int = _CARLA_PORT,
         carla_timeout: int = _CARLA_TIMEOUT,
         queue_size: int = _QUEUE_SIZE,
@@ -209,8 +208,8 @@ if __name__ == '__main__':
     parser.add_argument('--port', type=int, required=True)
     parser.add_argument('--vehicle-blueprint-name', type=str, required=True)
     parser.add_argument('--client-host', type=str, required=True)
+    parser.add_argument('--carla-host', type=str, required=True)
     parser.add_argument('--sensor-blueprint_name', type=str, default=_SENSOR_BLUEPRINT_NAME)
-    parser.add_argument('--carla-host', type=str, default=_CARLA_HOST)
     parser.add_argument('--carla-port', type=int, default=_CARLA_PORT)
     parser.add_argument('--carla-timeout', type=float, default=_CARLA_TIMEOUT)
     parser.add_argument('--queue-size', type=int, default=_QUEUE_SIZE)

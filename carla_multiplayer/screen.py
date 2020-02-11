@@ -9,6 +9,7 @@ from .udp import Receiver, Datagram
 _FPS = 30
 _WIDTH = 1280
 _HEIGHT = 720
+_QUEUE_SIZE = 2
 
 
 def _convert_webp_bytes_to_pygame_image(data: bytes, dimensions):
@@ -50,12 +51,21 @@ class Screen(object):
 
 
 if __name__ == '__main__':
-    import sys
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, required=True)
+    parser.add_argument('--queue-size', type=int, default=_QUEUE_SIZE)
+    parser.add_argument('--fps', type=int, default=_FPS)
+    parser.add_argument('--width', type=int, default=_WIDTH)
+    parser.add_argument('--height', type=int, default=_HEIGHT)
+
+    args = parser.parse_args()
 
     pygame.init()
 
-    _receiver = Receiver(int(sys.argv[1]), 8)
-    _screen = Screen(_WIDTH, _HEIGHT)
+    _receiver = Receiver(args.port, args.queue_size)
+    _screen = Screen(args.width, args.height)
     _receiver.set_callback(_screen.handle_webp_bytes)
     _receiver.start()
 
@@ -70,7 +80,7 @@ if __name__ == '__main__':
 
             _screen.update()
 
-            _clock.tick(_FPS)
+            _clock.tick(args.fps)
         except KeyboardInterrupt:
             break
 

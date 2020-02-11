@@ -22,6 +22,9 @@ _SENSOR_TRANSFORM = carla.Transform(
     carla.Location(-15, 0, 15),
     carla.Rotation(16.875, 0, 0)
 )
+_CARLA_PORT = 2000
+_CARLA_TIMEOUT = 2.0
+_QUEUE_SIZE = 2
 
 
 def create_sensor(
@@ -171,21 +174,36 @@ class Sensor(Threader):
 
 
 if __name__ == '__main__':
-    import sys
+    import argparse
     import time
 
-    _client = carla.Client('localhost', 2000)
-    _client.set_timeout(2.0)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, required=True)
+    parser.add_argument('--client-host', type=str, required=True)
+    parser.add_argument('--carla-host', type=str, required=True)
+    parser.add_argument('--actor-id', type=int, required=True)
+    parser.add_argument('--sensor-blueprint_name', type=str, default=_SENSOR_BLUEPRINT_NAME)
+    parser.add_argument('--carla-port', type=int, default=_CARLA_PORT)
+    parser.add_argument('--carla-timeout', type=float, default=_CARLA_TIMEOUT)
+    parser.add_argument('--queue-size', type=int, default=_QUEUE_SIZE)
+    parser.add_argument('--fps', type=int, default=_FPS)
+    parser.add_argument('--width', type=int, default=_WIDTH)
+    parser.add_argument('--height', type=int, default=_HEIGHT)
+
+    args = parser.parse_args()
+
+    _client = carla.Client(args.carla_host, args.carla_port)
+    _client.set_timeout(args.carla_timeout)
 
     _world = _client.get_world()
     _blueprint_library = _world.get_blueprint_library()
 
-    _actor_id = create_sensor(_client, int(sys.argv[1])).id
+    _actor_id = create_sensor(_client, args.actor_id, args.sensor_blueprint_name, args.fps, args.width, args.height).id
 
-    _sender = Sender(int(sys.argv[2]), 2)
+    _sender = Sender(args.port, args.queue_size)
     _sender.start()
 
-    _sensor = Sensor(_client, _actor_id, 2, _sender, sys.argv[3], int(sys.argv[4]))
+    _sensor = Sensor(_client, _actor_id, args.queue_size, _sender, args.client_host, args.port)
     _sensor.start()
 
     while 1:

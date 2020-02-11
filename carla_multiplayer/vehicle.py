@@ -18,6 +18,9 @@ Pyro4.config.SERIALIZERS_ACCEPTED = ['pickle']
 _CONTROL_RATE = 1.0 / 10.0  # 10 Hz
 _CONTROL_EXPIRE = 1.0  # 1 s
 _RESET_RATE = 1.0 / 1.0  # 1 Hz
+_CARLA_PORT = 2000
+_CARLA_TIMEOUT = 2.0
+_QUEUE_SIZE = 2
 
 _SAFE_CONTROL = carla.VehicleControl(throttle=0.0, brake=1.0, hand_brake=True)
 
@@ -135,10 +138,19 @@ class Vehicle(TimedLooper):
 
 
 if __name__ == '__main__':
-    import sys
+    import argparse
     import time
 
-    _receiver = Receiver(int(sys.argv[1]), 2)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, required=True)
+    parser.add_argument('--vehicle-blueprint-name', type=str, required=True)
+    parser.add_argument('--carla-host', type=str, required=True)
+    parser.add_argument('--carla-port', type=int, default=_CARLA_PORT)
+    parser.add_argument('--carla-timeout', type=float, default=_CARLA_TIMEOUT)
+
+    args = parser.parse_args()
+
+    _receiver = Receiver(args.port, args.queue_size)
     _receiver.start()
 
     _client = carla.Client('localhost', 2000)

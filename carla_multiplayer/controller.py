@@ -8,6 +8,8 @@ from .looper import TimedLooper
 from .udp import Sender
 
 _CONTROL_RATE = 1.0 / 10.0  # 10 Hz
+_QUEUE_SIZE = 2
+_FPS = 30
 
 
 class ControllerState(NamedTuple):
@@ -195,18 +197,28 @@ class GamepadController(TimedLooper):
 
 
 if __name__ == '__main__':
-    import sys
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--host', type=str, required=True)
+    parser.add_argument('--port', type=int, required=True)
+    parser.add_argument('--controller-index', type=int, default=0)
+    parser.add_argument('--queue-size', type=int, default=_QUEUE_SIZE)
+    parser.add_argument('--fps', type=int, default=_FPS)
+
+    args = parser.parse_args()
 
     pygame.init()
 
-    _sender = Sender(int(sys.argv[1]), 2)
+    _sender = Sender(args.port, args.queue_size)
     _sender.start()
 
     _controller = GamepadController(
         sender=_sender,
-        host=sys.argv[2],
-        port=int(sys.argv[3]),
-        controller_index=0
+        host=args.host,
+        port=args.port,
+        controller_index=args.controller_index
     )
     _controller.start()
 
@@ -222,7 +234,7 @@ if __name__ == '__main__':
 
                 _controller.handle_event(e)
 
-            _clock.tick(24)
+            _clock.tick(args.fps)
         except KeyboardInterrupt:
             break
 
