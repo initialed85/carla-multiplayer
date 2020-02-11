@@ -62,7 +62,11 @@ def delete_vehicle(client: carla.Client, actor_id: int):
 
 
 class Vehicle(TimedLooper):
-    def __init__(self, receiver: Receiver, client: carla.Client, actor_id: int, control_rate: float = _CONTROL_RATE,
+    def __init__(self,
+            receiver: Receiver,
+            client: carla.Client,
+            actor_id: int,
+            control_rate: float = _CONTROL_RATE,
             control_expire: float = _CONTROL_EXPIRE,
             reset_rate: float = _RESET_RATE):
         super().__init__(

@@ -1,14 +1,11 @@
 import pygame
 
 from .controller import GamepadController
-from .screen import Screen
+from .screen import Screen, _FPS, _WIDTH, _HEIGHT
 from .udp import Sender, Receiver
 
 _CONTROLLER_INDEX = 0
 _QUEUE_SIZE = 2
-_WIDTH = 1280
-_HEIGHT = 720
-_FPS = 30
 
 
 class Client(object):
@@ -17,6 +14,7 @@ class Client(object):
             controller_port: int,
             screen_port: int,
             controller_index: int = _CONTROLLER_INDEX,
+            fps: int = _FPS,
             width: int = _WIDTH,
             height: int = _HEIGHT,
             queue_size: int = _QUEUE_SIZE):
@@ -24,6 +22,7 @@ class Client(object):
         self._controller_port: int = controller_port
         self._screen_port: int = screen_port
         self._controller_index: int = controller_index
+        self._fps: int = fps
         self._width: int = width
         self._height: int = height
         self._queue_size: int = queue_size
@@ -56,7 +55,7 @@ class Client(object):
 
                 self._screen.update()
 
-                self._clock.tick(24)
+                self._clock.tick(self._fps)
             except KeyboardInterrupt:
                 self._stopped = True
                 break
@@ -81,6 +80,7 @@ class Client(object):
 def run_client(host: str,
         port: int,
         controller_index: int = _CONTROLLER_INDEX,
+        fps: int = _FPS,
         width: int = _WIDTH,
         height: int = _HEIGHT,
         queue_size: int = _QUEUE_SIZE):
@@ -89,6 +89,7 @@ def run_client(host: str,
         controller_index=controller_index,
         controller_port=port,
         screen_port=port,
+        fps=fps,
         width=width,
         height=height,
         queue_size=queue_size
@@ -100,6 +101,26 @@ def run_client(host: str,
 
 
 if __name__ == '__main__':
-    import sys
+    import argparse
 
-    run_client(sys.argv[1], int(sys.argv[2]))
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--host', type=str, required=True)
+    parser.add_argument('--port', type=int, required=True)
+    parser.add_argument('--controller-index', type=int, default=0)
+    parser.add_argument('--fps', type=int, default=_FPS)
+    parser.add_argument('--width', type=int, default=_WIDTH)
+    parser.add_argument('--height', type=int, default=_WIDTH)
+    parser.add_argument('--queue-size', type=int, default=_QUEUE_SIZE)
+
+    args = parser.parse_args()
+
+    run_client(
+        host=args.host,
+        port=args.port,
+        controller_index=args.controller_index,
+        fps=args.fps,
+        width=args.width,
+        height=args.height,
+        queue_size=args.queue_size,
+    )
