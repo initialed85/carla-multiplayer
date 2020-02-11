@@ -29,10 +29,26 @@ class Client(object):
 
         pygame.init()
 
-        self._sender: Sender = Sender(self._controller_port, self._queue_size, use_shared_socket=True)
-        self._controller: GamepadController = GamepadController(self._sender, self._host, self._controller_port, self._controller_index)
-        self._receiver: Receiver = Receiver(self._screen_port, self._queue_size, use_shared_socket=True)
-        self._screen: Screen = Screen(self._width, self._height)
+        self._sender: Sender = Sender(
+            port=self._controller_port,
+            queue_size=self._queue_size,
+            use_shared_socket=True
+        )
+        self._controller: GamepadController = GamepadController(
+            sender=self._sender,
+            host=self._host,
+            port=self._controller_port,
+            controller_index=self._controller_index
+        )
+        self._receiver: Receiver = Receiver(
+            port=self._screen_port,
+            queue_size=self._queue_size,
+            use_shared_socket=True
+        )
+        self._screen: Screen = Screen(
+            width=self._width,
+            height=self._height
+        )
         self._receiver.set_callback(self._screen.handle_webp_bytes)
         self._clock: pygame.time.Clock = pygame.time.Clock()
 

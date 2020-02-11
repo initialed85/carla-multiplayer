@@ -34,16 +34,16 @@ class _SocketMixIn(object):
 
 
 class Receiver(_SocketMixIn, Threader):
-    def __init__(self, port: int, max_queue_size: int, callback: Optional[Callable] = None, use_shared_socket: bool = False):
+    def __init__(self, port: int, queue_size: int, callback: Optional[Callable] = None, use_shared_socket: bool = False):
         super().__init__()
 
         self._port: int = port
-        self._max_queue_size: int = max_queue_size
+        self._queue_size: int = queue_size
         self._callback: Optional[Callable] = None
         self._use_shared_socket: bool = use_shared_socket
 
         self._socket: Optional[socket.socket] = None
-        self._datagrams: Queue = Queue(maxsize=self._max_queue_size)
+        self._datagrams: Queue = Queue(maxsize=self._queue_size)
 
         if callback is not None:
             self.set_callback(callback)
@@ -118,15 +118,15 @@ class Receiver(_SocketMixIn, Threader):
 
 
 class Sender(_SocketMixIn, Threader):
-    def __init__(self, port: int, max_queue_size: int, use_shared_socket: bool = False):
+    def __init__(self, port: int, queue_size: int, use_shared_socket: bool = False):
         super().__init__()
 
         self._port: int = port
-        self._max_queue_size: int = max_queue_size
+        self._queue_size: int = queue_size
         self._use_shared_socket: bool = use_shared_socket
 
         self._socket: Optional[socket.socket] = None
-        self._datagrams: Queue = Queue(maxsize=self._max_queue_size)
+        self._datagrams: Queue = Queue(maxsize=self._queue_size)
 
     def _drain_datagram_queue_to_socket(self):
         while not self._stop_event.is_set():

@@ -56,10 +56,18 @@ class Server(object):
         self._vehicle_actor: carla.Actor = None
         self._sensor_actor: carla.Actor = None
 
-        self._receiver: Receiver = Receiver(self._vehicle_port, self._queue_size, use_shared_socket=True)
+        self._receiver: Receiver = Receiver(
+            port=self._vehicle_port,
+            queue_size=self._queue_size,
+            use_shared_socket=True
+        )
         self._vehicle: Optional[Vehicle] = None
 
-        self._sender: Sender = Sender(self._sensor_port, self._queue_size, use_shared_socket=True)
+        self._sender: Sender = Sender(
+            port=self._sensor_port,
+            queue_size=self._queue_size,
+            use_shared_socket=True
+        )
         self._sensor: Optional[Sensor] = None
 
         self._client: carla.Client = carla.Client(self._carla_host, self._carla_port)
@@ -92,13 +100,13 @@ class Server(object):
             return
 
         self._sensor_actor = create_sensor(
-            self._client,
-            self._vehicle_actor.id,
-            self._sensor_blueprint_name,
-            self._fps,
-            self._width,
-            self._height,
-            self._sensor_transform
+            client=self._client,
+            actor_id=self._vehicle_actor.id,
+            sensor_blueprint_name=self._sensor_blueprint_name,
+            fps=self._fps,
+            width=self._width,
+            height=self._height,
+            transform=self._sensor_transform
         )
 
         if self._stopped:
