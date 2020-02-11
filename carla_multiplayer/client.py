@@ -126,7 +126,7 @@ if __name__ == '__main__':
     parser.add_argument('--controller-index', type=int, default=0)
     parser.add_argument('--fps', type=int, default=_FPS)
     parser.add_argument('--width', type=int, default=_WIDTH)
-    parser.add_argument('--height', type=int, default=_WIDTH)
+    parser.add_argument('--height', type=int, default=_HEIGHT)
     parser.add_argument('--queue-size', type=int, default=_QUEUE_SIZE)
 
     args = parser.parse_args()
