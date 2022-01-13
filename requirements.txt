@@ -1,4 +1,4 @@
-Pillow==7.0.0
+Pillow==9.0.0
 mock==3.0.5
 pytest==5.3.5
 lark-parser==0.8.1
